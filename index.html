@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>XRP SIGNAL LAYER · webzy87</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020b16;--bg2:#061220;--bg3:#0a1828;
+  --panel:rgba(4,12,24,0.98);
+  --border:rgba(0,200,255,0.1);--border2:rgba(0,200,255,0.06);
+  --accent:#00c8ff;--green:#00e87a;--red:#ff3355;
+  --yellow:#ffc940;--whale:#ff6b35;
+  --muted:rgba(160,200,240,0.42);--text:#cce4ff;
+  --glow:0 0 16px rgba(0,200,255,0.22);
+  --r:5px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:13px;
+  min-height:100vh;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.022) 3px,rgba(0,0,0,0.022) 4px);
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,200,255,0.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,255,0.015) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+#app{position:relative;z-index:1;}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:sticky;top:0;z-index:200;
+  background:rgba(2,11,22,0.98);border-bottom:1px solid var(--border);
+  padding:8px 14px;display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:3px;color:var(--accent);text-shadow:var(--glow);cursor:pointer;user-select:none;}
+.logo em{color:var(--whale);font-style:normal;}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;animation:dp 1.5s ease-in-out infinite;}
+.dot.live{background:var(--green);box-shadow:0 0 6px var(--green);}
+.dot.warn{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.28}}
+.topbtn{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;padding:5px 9px;cursor:pointer;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;}
+.topbtn.active{background:rgba(0,200,255,.1);border-color:var(--accent);color:var(--accent);}
+
+/* ── LAYOUT ── */
+#scroll{display:flex;flex-direction:column;gap:0;}
+.section{padding:5px 8px;}
+
+/* ── CARD ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:5px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.28;}
+.ct{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;}
+.badge{font-size:7px;background:rgba(0,200,255,.06);border:1px solid var(--border2);padding:2px 6px;border-radius:2px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+/* ── DRIFT COMPASS ── */
+#compass-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 0 6px;
+}
+#compass-canvas{display:block;}
+#compass-reading{
+  font-family:'Orbitron',monospace;font-size:20px;font-weight:900;
+  margin-top:8px;letter-spacing:2px;
+}
+#compass-sub{font-size:10px;color:var(--muted);margin-top:3px;text-align:center;max-width:260px;line-height:1.5;}
+#compass-action{
+  margin-top:10px;padding:8px 16px;border-radius:3px;
+  font-family:'Orbitron',monospace;font-size:11px;font-weight:700;
+  letter-spacing:1px;text-align:center;border:1px solid transparent;
+}
+
+/* TF ALIGNMENT BARS */
+#tf-alignment{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px;}
+.tfa{text-align:center;padding:6px 4px;border-radius:3px;border:1px solid var(--border2);background:rgba(0,0,0,.2);}
+.tfa-label{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;}
+.tfa-arrow{font-size:20px;margin-bottom:2px;}
+.tfa-val{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;}
+.tfa-sub{font-size:8px;color:var(--muted);margin-top:1px;}
+.tfa.bull{border-color:rgba(0,232,122,.25);background:rgba(0,232,122,.05);}
+.tfa.bear{border-color:rgba(255,51,85,.25);background:rgba(255,51,85,.05);}
+.tfa.flat{border-color:rgba(255,201,64,.15);background:rgba(255,201,64,.03);}
+
+/* ALIGNMENT READING */
+#align-reading{
+  margin-top:8px;padding:8px 12px;border-radius:3px;
+  background:rgba(0,0,0,.25);border:1px solid var(--border2);
+  text-align:center;
+}
+#align-main{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;margin-bottom:3px;}
+#align-sub{font-size:10px;color:var(--muted);line-height:1.5;}
+
+/* ── ANOMALY ENGINE ── */
+#anomaly-status{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:3px;background:rgba(0,0,0,.2);border:1px solid var(--border2);
+  margin-bottom:8px;
+}
+#anom-icon{font-size:24px;flex-shrink:0;}
+#anom-state{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
+#anom-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+
+.anom-item{
+  padding:8px 10px;border-radius:3px;margin-bottom:4px;
+  border-left:3px solid transparent;
+  background:rgba(255,255,255,.02);
+  animation:ain .3s ease;
+}
+@keyframes ain{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.anom-item.buy{border-left-color:var(--green);background:rgba(0,232,122,.03);}
+.anom-item.sell{border-left-color:var(--red);background:rgba(255,51,85,.03);}
+.anom-item.neutral{border-left-color:var(--yellow);}
+.anom-item.whale{border-left-color:var(--whale);background:rgba(255,107,53,.04);}
+.anom-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;}
+.anom-title{font-size:12px;font-weight:700;}
+.anom-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);}
+.anom-body{font-size:11px;color:rgba(180,210,240,.8);line-height:1.55;margin-bottom:3px;}
+.anom-stat{font-size:9px;color:var(--muted);font-style:italic;}
+.sig-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:8px;padding:2px 7px;border-radius:10px;margin-top:4px;
+  font-family:'Share Tech Mono',monospace;letter-spacing:.5px;
+}
+.sig-anomaly{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);color:var(--whale);}
+.sig-strong{background:rgba(255,51,85,.15);border:1px solid rgba(255,51,85,.3);color:var(--red);}
+.sig-pattern{background:rgba(255,201,64,.12);border:1px solid rgba(255,201,64,.25);color:var(--yellow);}
+.sig-iceberg{background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.2);color:var(--accent);}
+
+/* ── NARRATIVE TIMELINE ── */
+#timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{
+  display:flex;gap:10px;padding:8px 4px;
+  border-bottom:1px solid var(--border2);
+  position:relative;
+  animation:ain .3s ease;
+}
+.tl-item:last-child{border-bottom:none;}
+.tl-left{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;width:40px;}
+.tl-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin:4px auto;flex-shrink:0;position:relative;}
+.tl-dot::after{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:16px;height:16px;border-radius:50%;opacity:.25;
+}
+.tl-dot.buy{background:var(--green);box-shadow:0 0 6px rgba(0,232,122,.5);}
+.tl-dot.buy::after{background:var(--green);}
+.tl-dot.sell{background:var(--red);box-shadow:0 0 6px rgba(255,51,85,.5);}
+.tl-dot.sell::after{background:var(--red);}
+.tl-dot.neutral{background:var(--yellow);}
+.tl-dot.whale{background:var(--whale);box-shadow:0 0 8px rgba(255,107,53,.6);}
+.tl-dot.anomaly{background:var(--accent);box-shadow:0 0 8px rgba(0,200,255,.5);}
+.tl-line{width:1px;flex:1;background:var(--border2);min-height:8px;}
+.tl-right{flex:1;}
+.tl-title{font-size:12px;font-weight:700;margin-bottom:2px;}
+.tl-title.buy{color:var(--green);}
+.tl-title.sell{color:var(--red);}
+.tl-title.neutral{color:var(--yellow);}
+.tl-title.whale{color:var(--whale);}
+.tl-title.anomaly{color:var(--accent);}
+.tl-body{font-size:11px;color:rgba(180,210,240,.75);line-height:1.6;}
+.tl-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.tl-tag{font-size:8px;padding:1px 6px;border-radius:10px;border:1px solid var(--border2);color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+/* ── STATS ROW ── */
+#stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:5px;}
+.stat-mini{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:8px;text-align:center;}
+.stat-mini .sl{font-size:7px;color:var(--muted);letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:3px;}
+.stat-mini .sv{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
+.stat-mini .ss{font-size:8px;color:var(--muted);margin-top:1px;}
+
+/* ── BASELINE CARD ── */
+#baseline-card{padding:8px 10px;background:rgba(0,0,0,.2);border:1px solid var(--border2);border-radius:3px;font-size:9px;color:var(--muted);margin-bottom:8px;}
+#baseline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;}
+.bstat{text-align:center;}
+.bstat .bl{font-size:8px;color:var(--muted);margin-bottom:2px;}
+.bstat .bv{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text);}
+
+/* ── ABSORPTION PANEL ── */
+#absorption-meter{margin-bottom:8px;}
+.abs-label{display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px;}
+.abs-track{height:10px;background:rgba(255,255,255,.04);border-radius:5px;overflow:hidden;position:relative;}
+.abs-fill{height:100%;border-radius:5px;transition:width .5s ease;}
+.abs-marker{position:absolute;top:0;height:100%;width:2px;background:rgba(255,255,255,.3);}
+#abs-status{font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid var(--border2);}
+
+/* ── DESKTOP ── */
+@media(min-width:900px){
+  #scroll{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:5px;padding:5px;
+    height:calc(100vh - 52px);
+    overflow:hidden;
+    align-items:start;
+  }
+  .col{overflow-y:auto;height:calc(100vh - 62px);scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding:2px;}
+  .section{padding:0;}
+}
+@media(max-width:899px){
+  #scroll{display:block;padding:4px 6px;}
+  .col{width:100%;}
+}
+
+/* helpers */
+.green{color:var(--green);}
+.red{color:var(--red);}
+.yellow{color:var(--yellow);}
+.wc{color:var(--whale);}
+.accent{color:var(--accent);}
+.muted{color:var(--muted);}
+.mono{font-family:'Orbitron',monospace;}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* EGG */
+#egg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:9999;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:24px;}
+#egg.on{display:flex;}
+#eggstars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.star{position:absolute;width:2px;height:2px;background:var(--accent);border-radius:50%;animation:sf linear infinite;opacity:0;}
+@keyframes sf{0%{opacity:0;transform:translateY(-10px)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateY(100vh)}}
+#eggxrp{font-family:'Orbitron',monospace;font-size:44px;font-weight:900;color:var(--whale);text-shadow:0 0 28px rgba(255,107,53,.5);margin-bottom:12px;animation:flt 3s ease-in-out infinite;}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#eggtxt{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent);text-align:center;max-width:420px;line-height:2.1;text-shadow:var(--glow);white-space:pre-wrap;}
+#eggclose{font-size:9px;color:var(--muted);margin-top:20px;letter-spacing:3px;opacity:0;animation:fi .8s ease 3s forwards;}
+@keyframes fi{to{opacity:1}}
+#khint{position:fixed;bottom:4px;right:8px;font-size:6px;color:rgba(0,200,255,.04);z-index:1000;user-select:none;transition:color .4s;}
+#khint:hover{color:rgba(0,200,255,.14);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="topbar">
+  <div>
+    <div class="logo" id="logoclick">XRP <em>SIGNAL</em> LAYER</div>
+    <div style="font-size:7px;color:var(--muted);letter-spacing:2px;margin-top:1px;font-family:'Share Tech Mono',monospace;">
+      <span class="dot warn" id="dot"></span><span id="ctxt">CONNECTING...</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--accent);" id="hp">£-.----</div>
+    <button class="topbtn" id="soundbtn" onclick="toggleSound()">🔔</button>
+    <a href="index.html" class="topbtn" style="text-decoration:none;">← CMD</a>
+  </div>
+</div>
+
+<div id="scroll">
+
+<!-- COL 1: COMPASS + ANOMALY ENGINE -->
+<div class="col">
+
+  <!-- DRIFT COMPASS -->
+  <div class="card">
+    <div class="ct">
+      DRIFT COMPASS
+      <span class="badge" id="compass-badge">CALCULATING</span>
+    </div>
+
+    <div id="compass-wrap">
+      <canvas id="compass-canvas" width="220" height="220"></canvas>
+      <div id="compass-reading" class="yellow">--</div>
+      <div id="compass-sub">Waiting for data across all timeframes...</div>
+      <div id="compass-action"></div>
+    </div>
+
+    <div id="tf-alignment">
+      <div class="tfa flat" id="tfa-1m"><div class="tfa-label">1 MIN</div><div class="tfa-arrow" id="arr-1m">→</div><div class="tfa-val" id="tfa-val-1m">--</div><div class="tfa-sub" id="tfa-sub-1m">flat</div></div>
+      <div class="tfa flat" id="tfa-5m"><div class="tfa-label">5 MIN</div><div class="tfa-arrow" id="arr-5m">→</div><div class="tfa-val" id="tfa-val-5m">--</div><div class="tfa-sub" id="tfa-sub-5m">flat</div></div>
+      <div class="tfa flat" id="tfa-15m"><div class="tfa-label">15 MIN</div><div class="tfa-arrow" id="arr-15m">→</div><div class="tfa-val" id="tfa-val-15m">--</div><div class="tfa-sub" id="tfa-sub-15m">flat</div></div>
+      <div class="tfa flat" id="tfa-1h"><div class="tfa-label">1 HOUR</div><div class="tfa-arrow" id="arr-1h">→</div><div class="tfa-val" id="tfa-val-1h">--</div><div class="tfa-sub" id="tfa-sub-1h">flat</div></div>
+    </div>
+
+    <div id="align-reading">
+      <div id="align-main" class="yellow">AWAITING DATA</div>
+      <div id="align-sub">All four timeframes need data before alignment can be read.</div>
+    </div>
+  </div>
+
+  <!-- ABSORPTION DETECTOR -->
+  <div class="card">
+    <div class="ct">ABSORPTION DETECTOR</div>
+    <div id="absorption-meter">
+      <div class="abs-label">
+        <span class="green">BUY ABSORPTION</span>
+        <span id="abs-buy-val" class="green">0%</span>
+      </div>
+      <div class="abs-track" style="margin-bottom:6px;">
+        <div class="abs-fill" id="abs-buy-fill" style="background:var(--green);width:0%"></div>
+      </div>
+      <div class="abs-label">
+        <span class="red">SELL ABSORPTION</span>
+        <span id="abs-sell-val" class="red">0%</span>
+      </div>
+      <div class="abs-track">
+        <div class="abs-fill" id="abs-sell-fill" style="background:var(--red);width:0%"></div>
+      </div>
+    </div>
+    <div id="abs-status" style="color:var(--muted);">
+      Watching for absorption patterns...
+    </div>
+    <div style="margin-top:8px;font-size:9px;color:var(--muted);line-height:1.6;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:3px;">
+      <span style="color:var(--accent);">What is absorption?</span> When price stays flat while large orders keep hitting one side without moving price — someone is quietly filling a position. Buy absorption = hidden buyer. Sell absorption = hidden seller.
+    </div>
+  </div>
+
+</div><!-- /col1 -->
+
+<!-- COL 2: NARRATIVE TIMELINE -->
+<div class="col">
+
+  <!-- BASELINE STATS -->
+  <div class="card">
+    <div class="ct">SESSION BASELINE <span class="badge" id="baseline-age">--</span></div>
+    <div id="baseline-card">
+      These are the session averages. Anomaly engine flags anything significantly above these numbers.
+    </div>
+    <div id="baseline-grid">
+      <div class="bstat"><div class="bl">AVG TRADE SIZE</div><div class="bv" id="bl-avg">--</div></div>
+      <div class="bstat"><div class="bl">AVG INTERVAL</div><div class="bv" id="bl-int">--</div></div>
+      <div class="bstat"><div class="bl">NORMAL WHALE/HR</div><div class="bv" id="bl-whr">--</div></div>
+    </div>
+  </div>
+
+  <!-- NARRATIVE TIMELINE -->
+  <div class="card" style="flex:1;">
+    <div class="ct">
+      NARRATIVE TIMELINE
+      <span class="badge" id="tl-count">0 EVENTS</span>
+    </div>
+    <div id="stats-row">
+      <div class="stat-mini"><div class="sl">ANOMALIES</div><div class="sv wc" id="s-anom">0</div><div class="ss">detected</div></div>
+      <div class="stat-mini"><div class="sl">AVG MULT</div><div class="sv accent" id="s-mult">0x</div><div class="ss">vs baseline</div></div>
+      <div class="stat-mini"><div class="sl">SIGNAL STR</div><div class="sv" id="s-str">--</div><div class="ss">current</div></div>
+    </div>
+    <div id="timeline"><div style="color:var(--muted);font-size:10px;padding:8px;text-align:center;">Watching the market. First events will appear shortly...</div></div>
+  </div>
+
+</div><!-- /col2 -->
+
+<!-- COL 3: ANOMALY ENGINE -->
+<div class="col">
+
+  <div class="card">
+    <div class="ct">ANOMALY ENGINE <span class="badge" id="anom-ct">0</span></div>
+
+    <div id="anomaly-status">
+      <div id="anom-icon">👁</div>
+      <div>
+        <div id="anom-state" class="muted">CALIBRATING BASELINE</div>
+        <div id="anom-sub">Needs ~60 trades to establish normal behaviour.</div>
+      </div>
+    </div>
+
+    <div id="anom-list">
+      <div style="color:var(--muted);font-size:9px;padding:4px;">Monitoring for statistical anomalies...</div>
+    </div>
+  </div>
+
+  <!-- ANOMALY EXPLANATION -->
+  <div class="card">
+    <div class="ct">HOW IT WORKS</div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+      <p style="margin-bottom:8px;">Unlike size-based alerts (which fire on any 100K+ trade), the anomaly engine compares each trade to the <em style="color:var(--text);">rolling session baseline</em>.</p>
+      <p style="margin-bottom:8px;">A <strong style="color:var(--accent);">5x trade</strong> when average size is 2,000 XRP matters more than a <strong style="color:var(--accent);">100K trade</strong> when average is 80,000 XRP.</p>
+      <p style="margin-bottom:8px;">It also detects <strong style="color:var(--whale);">velocity bursts</strong> — when multiple anomalous trades cluster together in under 90 seconds. This often precedes price movement.</p>
+      <p>The <strong style="color:var(--yellow);">Drift Compass</strong> updates when 3+ timeframes align in the same direction. That's the rare moment when momentum is genuinely stacking up.</p>
+    </div>
+  </div>
+
+</div><!-- /col3 -->
+
+</div><!-- /scroll -->
+</div><!-- /app -->
+
+<!-- EGG -->
+<div id="egg">
+  <div id="eggstars"></div>
+  <div id="eggxrp">⬡ XRP</div>
+  <div id="eggtxt"></div>
+  <div id="eggclose">[ TAP ANYWHERE TO RETURN ]</div>
+</div>
+<div id="khint">↑↑↓↓←→←→BA</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════
+const WHALE_T=100000,SHARK_T=25000,FISH_T=5000;
+const BASELINE_MIN=60; // trades needed to calibrate
+const ANOMALY_MULT=4;  // 4x average = anomaly
+const BURST_WIN=90000; // 90s burst window
+const BURST_MIN=3;     // 3 anomalies in burst window = event
+const RECONN=4000;
+const RENDER_THR=500; // DOM updates max every 500ms
+const CANVAS_THR=1200; // canvas redraws max every 1.2s
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+const S={
+  gbp:0.79,priceGbp:0,change24h:0,
+  // baseline
+  tradeCount:0,
+  sizeSum:0,
+  tradeTimes:[],   // timestamps for interval calc
+  avgSize:0,avgInterval:5000,
+  // rolling window for delta per TF
+  tfData:{
+    '1m':{buy:0,sell:0,start:Date.now(),snaps:[]},
+    '5m':{buy:0,sell:0,start:Date.now(),snaps:[]},
+    '15m':{buy:0,sell:0,start:Date.now(),snaps:[]},
+    '1h':{buy:0,sell:0,start:Date.now(),snaps:[]},
+  },
+  // absorption tracking
+  absWin:[],       // {price,qty,isBuy,time}
+  absWindowMs:30000,
+  absThreshold:0.003, // price range for "flat" = 0.3%
+  // anomalies
+  anomalies:[],
+  anomalyCount:0,
+  anomalyTimes:[],  // for burst detection
+  burstCount:0,
+  // timeline
+  timeline:[],
+  tlCount:0,
+  // whales per hour estimate
+  whalesThisSession:0,
+  sessionStart:Date.now(),
+  soundOn:false,
+  wsAlive:false,
+  // compass
+  compassAngle:0,compassTarget:0,
+  compassAnim:null,
+};
+const TF_MS={'1m':60000,'5m':300000,'15m':900000,'1h':3600000};
+
+// ═══════════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════════
+let actx=null;
+function ga(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx;}
+function beep(f,d,v=0.1,t='sine'){try{const a=ga(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch{}}
+function playAnomaly(){if(S.soundOn){beep(660,.08,.12);setTimeout(()=>beep(880,.12,.1),60);}}
+function playBurst(){if(S.soundOn){[0,80,160,240].forEach(d=>setTimeout(()=>beep(550,.06,.1),d));}}
+function playAlign(){if(S.soundOn){[440,550,660,770].forEach((f,i)=>setTimeout(()=>beep(f,.1,.12),i*70));}}
+window.toggleSound=function(){S.soundOn=!S.soundOn;const b=document.getElementById('soundbtn');b.textContent=S.soundOn?'🔔 ON':'🔔';b.className=S.soundOn?'topbtn active':'topbtn';if(S.soundOn)beep(440,.1);};
+
+// ═══════════════════════════════════════════════════
+// GBP RATE
+// ═══════════════════════════════════════════════════
+async function fetchGbp(){
+  try{const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=GBP');const j=await r.json();S.gbp=j.rates.GBP;}
+  catch{try{const r=await fetch('https://open.er-api.com/v6/latest/USD');const j=await r.json();S.gbp=j.rates?.GBP||0.79;}catch{S.gbp=0.79;}}
+  setTimeout(fetchGbp,60000);
+}
+
+// ═══════════════════════════════════════════════════
+// EXCHANGE CONNECTIONS
+// ═══════════════════════════════════════════════════
+function setConn(alive){
+  S.wsAlive=alive;
+  document.getElementById('dot').className='dot '+(alive?'live':'warn');
+  document.getElementById('ctxt').textContent=alive?'LIVE · BINANCE + 4 EXCHANGES':'CONNECTING...';
+}
+
+function connectBinance(){
+  const ws=new WebSocket('wss://stream.binance.com:9443/ws/xrpusdt@aggTrade');
+  ws.onopen=()=>setConn(true);
+  ws.onmessage=e=>{try{const d=JSON.parse(e.data);onTrade('Binance',parseFloat(d.p)*S.gbp,parseFloat(d.q),!d.m);}catch{}};
+  ws.onerror=()=>{};
+  ws.onclose=()=>{setConn(false);setTimeout(connectBinance,RECONN);};
+}
+function connectKraken(){
+  try{const ws=new WebSocket('wss://ws.kraken.com');ws.onopen=()=>ws.send(JSON.stringify({event:'subscribe',pair:['XRP/USD'],subscription:{name:'trade'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(Array.isArray(d)&&d[2]==='trade')d[1].forEach(t=>onTrade('Kraken',parseFloat(t[0])*S.gbp,parseFloat(t[1]),t[3]==='b'));}catch{}};ws.onclose=()=>setTimeout(connectKraken,RECONN);}catch{setTimeout(connectKraken,RECONN);}
+}
+function connectCoinbase(){
+  try{const ws=new WebSocket('wss://advanced-trade-ws.coinbase.com');ws.onopen=()=>ws.send(JSON.stringify({type:'subscribe',product_ids:['XRP-USD'],channel:'market_trades'}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.channel==='market_trades'&&d.events)d.events.forEach(ev=>{if(ev.trades)ev.trades.forEach(t=>onTrade('Coinbase',parseFloat(t.price)*S.gbp,parseFloat(t.size),t.side==='BUY'));});}catch{}};ws.onclose=()=>setTimeout(connectCoinbase,RECONN);}catch{setTimeout(connectCoinbase,RECONN);}
+}
+function connectBitstamp(){
+  try{const ws=new WebSocket('wss://ws.bitstamp.net');ws.onopen=()=>ws.send(JSON.stringify({event:'bts:subscribe',data:{channel:'live_trades_xrpusd'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.event==='trade')onTrade('Bitstamp',parseFloat(d.data.price)*S.gbp,parseFloat(d.data.amount),parseInt(d.data.type)===0);}catch{}};ws.onclose=()=>setTimeout(connectBitstamp,RECONN);}catch{setTimeout(connectBitstamp,RECONN);}
+}
+function connectOKX(){
+  try{const ws=new WebSocket('wss://ws.okx.com:8443/ws/v5/public');ws.onopen=()=>ws.send(JSON.stringify({op:'subscribe',args:[{channel:'trades',instId:'XRP-USDT'}]}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.arg?.channel==='trades'&&Array.isArray(d.data))d.data.forEach(t=>onTrade('OKX',parseFloat(t.px)*S.gbp,parseFloat(t.sz),t.side==='buy'));}catch{}};ws.onclose=()=>setTimeout(connectOKX,RECONN);}catch{setTimeout(connectOKX,RECONN);}
+}
+
+// ═══════════════════════════════════════════════════
+// CORE TRADE HANDLER
+// ═══════════════════════════════════════════════════
+let lastRender=0,lastCanvas=0;
+function onTrade(exchange,price,qty,isBuy){
+  if(!price||!qty||isNaN(price)||isNaN(qty))return;
+  S.priceGbp=price;
+  const now=Date.now(),ts=new Date().toTimeString().slice(0,8);
+
+  // Baseline tracking
+  S.tradeCount++;
+  S.sizeSum+=qty;
+  S.tradeTimes.push(now);
+  if(S.tradeTimes.length>500)S.tradeTimes.shift();
+  if(S.tradeTimes.length>1){
+    const intervals=[];
+    for(let i=1;i<Math.min(S.tradeTimes.length,50);i++)intervals.push(S.tradeTimes[S.tradeTimes.length-i]-S.tradeTimes[S.tradeTimes.length-i-1]);
+    S.avgInterval=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+  }
+  S.avgSize=S.sizeSum/S.tradeCount;
+
+  // TF delta
+  Object.entries(TF_MS).forEach(([tf,ms])=>{
+    const d=S.tfData[tf];
+    if(now-d.start>ms){
+      // snapshot and reset
+      d.snaps.push({buy:d.buy,sell:d.sell,ts:now});
+      if(d.snaps.length>20)d.snaps.shift();
+      d.buy=0;d.sell=0;d.start=now;
+    }
+    if(isBuy)d.buy+=qty;else d.sell+=qty;
+  });
+
+  // Whales
+  if(qty>=WHALE_T)S.whalesThisSession++;
+
+  // Absorption window
+  S.absWin.push({price,qty,isBuy,time:now});
+  S.absWin=S.absWin.filter(t=>now-t.time<S.absWindowMs);
+
+  // Anomaly detection (needs calibration)
+  if(S.tradeCount>=BASELINE_MIN){
+    const mult=qty/S.avgSize;
+    if(mult>=ANOMALY_MULT){
+      processAnomaly(exchange,price,qty,isBuy,mult,ts,now);
+    }
+  }
+
+  // Throttled render - DOM and canvas on separate cycles
+  const now2=Date.now();
+  if(now2-lastRender>RENDER_THR){
+    lastRender=now2;
+    renderBaseline();
+    renderTimeline();
+    renderAnomalies();
+    computeAbsorption();
+  }
+  if(now2-lastCanvas>CANVAS_THR){
+    lastCanvas=now2;
+    computeCompass();
+  }
+  document.getElementById('hp').textContent=S.priceGbp?'£'+fmtN(S.priceGbp,4):'£-.----';
+}
+
+// ═══════════════════════════════════════════════════
+// ANOMALY PROCESSING
+// ═══════════════════════════════════════════════════
+function processAnomaly(exchange,price,qty,isBuy,mult,ts,nowMs){
+  S.anomalyCount++;
+  S.anomalyTimes.push({time:nowMs,isBuy,qty,exchange});
+  S.anomalyTimes=S.anomalyTimes.filter(a=>nowMs-a.time<BURST_WIN);
+
+  // Burst detection
+  const isBurst=S.anomalyTimes.length>=BURST_MIN;
+  const burstBuys=S.anomalyTimes.filter(a=>a.isBuy).length;
+  const burstSells=S.anomalyTimes.length-burstBuys;
+  const burstDir=burstBuys>burstSells?'buy':burstSells>burstBuys?'sell':'neutral';
+
+  // Build narrative
+  const multStr=mult.toFixed(1)+'x';
+  let title,body,type,tags=[];
+  if(isBurst&&S.anomalyTimes.length===BURST_MIN){
+    // First burst trigger
+    title=isBuy?`Burst of Anomalous ${burstDir==='buy'?'Buying':'Selling'} Detected`:`Velocity Burst — ${S.anomalyTimes.length} Anomalous Prints`;
+    body=`${S.anomalyTimes.length} unusually large trades hit within ${Math.round(BURST_WIN/1000)}s. `+
+         `${burstBuys>0?burstBuys+' buy':''} ${burstSells>0?burstSells+' sell':''} prints, each averaging ${fmtN(mult,1)}x normal size. `+
+         `${burstDir==='buy'?'Pattern is consistent with an institution entering a position quietly.':'Pattern may indicate coordinated selling or stop-hunting.'}`;
+    type=burstDir;
+    tags=['velocity burst','multi-exchange','statistical'];
+    pushTimeline(title,body,burstDir==='buy'?'buy':burstDir==='sell'?'sell':'anomaly',tags,ts);
+    playBurst();
+  } else if(!isBurst){
+    // Single anomaly
+    title=`${isBuy?'Anomalous Buy':'Anomalous Sell'} — ${multStr} Normal Size`;
+    body=`A ${fmtX(qty)} XRP ${isBuy?'buy':'sell'} hit ${exchange} at £${fmtN(price,4)}. `+
+         `This is ${multStr} the current session average of ${fmtX(S.avgSize)} XRP. `+
+         `${qty>=WHALE_T?'Whale-sized order.':qty>=SHARK_T?'Large institutional-scale trade.':'Significant relative to session baseline.'}`;
+    type=isBuy?'buy':'sell';
+    tags=[multStr+' baseline','single print',exchange.toLowerCase()];
+    pushTimeline(title,body,type,tags,ts);
+    playAnomaly();
+  }
+
+  // Push to anomaly list
+  S.anomalies.unshift({title,body:body||'',type:type||'neutral',mult,exchange,ts,time:ts,tags,isBurst});
+  if(S.anomalies.length>30)S.anomalies.pop();
+
+  renderAnomalies();
+}
+
+// ═══════════════════════════════════════════════════
+// TIMELINE
+// ═══════════════════════════════════════════════════
+function pushTimeline(title,body,type,tags,time){
+  S.timeline.unshift({title,body,type,tags,time,ts:Date.now()});
+  if(S.timeline.length>50)S.timeline.pop();
+  S.tlCount++;
+}
+
+// ═══════════════════════════════════════════════════
+// COMPASS COMPUTE
+// ═══════════════════════════════════════════════════
+let prevAlignState='';
+function computeCompass(){
+  const scores={};
+  let total=0,count=0;
+  // For each TF, calculate current delta momentum
+  const now=Date.now();
+  Object.entries(TF_MS).forEach(([tf,ms])=>{
+    const d=S.tfData[tf];
+    const tfTot=d.buy+d.sell;
+    if(tfTot<100){scores[tf]=0;return;}
+    const bp=(d.buy/tfTot-0.5)*2; // -1 to +1
+    scores[tf]=bp;
+    total+=bp;count++;
+  });
+  const avg=count>0?total/count:0;
+
+  // Alignment
+  const allBull=Object.values(scores).filter(v=>v>0.1).length;
+  const allBear=Object.values(scores).filter(v=>v<-0.1).length;
+  const aligned=allBull>=3||allBear>=3;
+  const strongAligned=allBull===4||allBear===4;
+
+  // Compass needle target: -90 = full sell, 0 = neutral, +90 = full buy
+  const targetAngle=avg*85; // map -1..+1 to -85..+85 degrees
+
+  // TF arrows
+  const tfIds={'1m':'1m','5m':'5m','15m':'15m','1h':'1h'};
+  Object.entries(scores).forEach(([tf,sc])=>{
+    const el=document.getElementById('tfa-'+tf);
+    const arrow=document.getElementById('arr-'+tf);
+    const val=document.getElementById('tfa-val-'+tf);
+    const sub=document.getElementById('tfa-sub-'+tf);
+    if(!el)return;
+    const bp=((sc+1)/2*100).toFixed(0);
+    if(sc>0.1){el.className='tfa bull';arrow.textContent='↑';arrow.style.color='var(--green)';val.style.color='var(--green)';}
+    else if(sc<-0.1){el.className='tfa bear';arrow.textContent='↓';arrow.style.color='var(--red)';val.style.color='var(--red)';}
+    else{el.className='tfa flat';arrow.textContent='→';arrow.style.color='var(--yellow)';val.style.color='var(--yellow)';}
+    val.textContent=bp+'% buy';
+    const d=S.tfData[tf];sub.textContent=fmtX(d.buy+d.sell)+' XRP';
+  });
+
+  // Alignment reading
+  const am=document.getElementById('align-main');
+  const as2=document.getElementById('align-sub');
+  const cb=document.getElementById('compass-badge');
+  let alignMsg,alignSub,compassReading,compassSub,compassAction;
+
+  if(S.tradeCount<BASELINE_MIN){
+    alignMsg='CALIBRATING';alignSub='Need more data. Check back in a moment.';
+    compassReading='--';compassSub='Building session baseline...';compassAction='';
+  } else if(strongAligned&&avg>0){
+    alignMsg='⚡ ALL FOUR TIMEFRAMES BULLISH';
+    alignSub='Momentum is stacking up across every timeframe. This is the rare setup where buyers are dominant from 1-minute to 1-hour simultaneously. High conviction zone.';
+    compassReading='ALIGNED BULL';compassSub='1m, 5m, 15m, and 1h all confirm buying momentum.';
+    compassAction='All four timeframes aligned bullish. This is when moves tend to have follow-through.';
+    am.style.color='var(--green)';
+    if(prevAlignState!=='strongbull'){playAlign();pushTimeline('All Timeframes Aligned Bullish','Every timeframe from 1-minute to 1-hour is showing buy pressure simultaneously. This is statistically rare and often precedes sustained upward movement. Watch for volume to confirm.','buy',['4-tf align','high confidence'],new Date().toTimeString().slice(0,8));prevAlignState='strongbull';}
+    cb.textContent='ALL ALIGNED 🟢';
+  } else if(strongAligned&&avg<0){
+    alignMsg='⚡ ALL FOUR TIMEFRAMES BEARISH';
+    alignSub='Momentum is stacking downward across every timeframe. Sellers are dominant from 1-minute to 1-hour. High risk zone.';
+    compassReading='ALIGNED BEAR';compassSub='1m, 5m, 15m, and 1h all confirm selling momentum.';
+    compassAction='All four timeframes aligned bearish. Strong risk-off signal.';
+    am.style.color='var(--red)';
+    if(prevAlignState!=='strongbear'){playAlign();pushTimeline('All Timeframes Aligned Bearish','Every timeframe from 1-minute to 1-hour is showing sell pressure simultaneously. This is the mirror of the bullish alignment — statistically rare and often signals sustained downward pressure.','sell',['4-tf align','high confidence'],new Date().toTimeString().slice(0,8));prevAlignState='strongbear';}
+    cb.textContent='ALL ALIGNED 🔴';
+  } else if(aligned&&avg>0){
+    alignMsg='3+ TIMEFRAMES BULLISH';alignSub='Most timeframes confirm buying momentum. Not all aligned, but meaningful directional confluence.';
+    compassReading='BULL LEAN';compassSub='Majority of timeframes bullish. Watch 1h to confirm.';compassAction='';am.style.color='var(--green)';cb.textContent='3/4 BULL 🟢';
+    if(prevAlignState!=='bull3'){prevAlignState='bull3';}
+  } else if(aligned&&avg<0){
+    alignMsg='3+ TIMEFRAMES BEARISH';alignSub='Most timeframes confirm selling momentum. Watch for the remaining timeframe to flip.';
+    compassReading='BEAR LEAN';compassSub='Majority of timeframes bearish.';compassAction='';am.style.color='var(--red)';cb.textContent='3/4 BEAR 🔴';
+    if(prevAlignState!=='bear3'){prevAlignState='bear3';}
+  } else{
+    alignMsg='TIMEFRAMES DIVERGING';alignSub='Short and long timeframes are pointing in different directions. This is a wait-and-see moment — no clear edge. Market is deciding direction.';
+    compassReading='MIXED SIGNALS';compassSub='Short-term and long-term momentum disagree.';compassAction='Wait for alignment before reading directional momentum.';am.style.color='var(--yellow)';cb.textContent='DIVERGED 🟡';
+    prevAlignState='mixed';
+  }
+
+  document.getElementById('align-main').textContent=alignMsg;
+  document.getElementById('align-sub').textContent=alignSub;
+  document.getElementById('compass-reading').textContent=compassReading;
+  document.getElementById('compass-reading').style.color=avg>0.15?'var(--green)':avg<-0.15?'var(--red)':'var(--yellow)';
+  document.getElementById('compass-sub').textContent=compassSub;
+  const ca=document.getElementById('compass-action');
+  if(compassAction){
+    ca.textContent=compassAction;
+    ca.style.cssText=`margin-top:10px;padding:8px 16px;border-radius:3px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-align:center;border:1px solid ${avg>0?'rgba(0,232,122,.3)':'avg'<0?'rgba(255,51,85,.3)':'var(--border)'};background:${avg>0?'rgba(0,232,122,.08)':avg<0?'rgba(255,51,85,.08)':'rgba(0,0,0,.2)'};color:${avg>0?'var(--green)':avg<0?'var(--red)':'var(--yellow)'};`;
+  } else ca.textContent='';
+
+  // Only redraw compass if needle moved more than 0.5 degrees
+  S.compassTarget=targetAngle;
+  if(Math.abs(targetAngle-(S.lastDrawnAngle||0))>0.5||strongAligned!==S.lastDrawnAligned){
+    S.lastDrawnAngle=targetAngle;
+    S.lastDrawnAligned=strongAligned;
+    drawCompass(S.compassTarget,avg,strongAligned,allBull,allBear);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// COMPASS CANVAS
+// ═══════════════════════════════════════════════════
+function drawCompass(angle,avg,strongAligned,allBull,allBear){
+  const canvas=document.getElementById('compass-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=220,H=220,cx=110,cy=110,r=90;
+  ctx.clearRect(0,0,W,H);
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,200,255,0.08)';
+  ctx.lineWidth=1;
+  ctx.stroke();
+
+  // Arc fill - bear side
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI,false);
+  ctx.strokeStyle='rgba(255,51,85,0.12)';
+  ctx.lineWidth=16;
+  ctx.stroke();
+
+  // Arc fill - bull side
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI,true);
+  ctx.strokeStyle='rgba(0,232,122,0.12)';
+  ctx.lineWidth=16;
+  ctx.stroke();
+
+  // Dynamic arc based on momentum
+  if(Math.abs(avg)>0.05){
+    const arcLen=Math.abs(avg)*Math.PI*0.85;
+    ctx.beginPath();
+    if(avg>0){
+      ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+arcLen,false);
+      ctx.strokeStyle=`rgba(0,232,122,${0.2+avg*0.4})`;
+    }else{
+      ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2-Math.abs(avg)*Math.PI*0.85,true);
+      ctx.strokeStyle=`rgba(255,51,85,${0.2+Math.abs(avg)*0.4})`;
+    }
+    ctx.lineWidth=16;
+    ctx.stroke();
+  }
+
+  // Tick marks
+  for(let i=0;i<12;i++){
+    const a=-Math.PI/2+i*(Math.PI*2/12);
+    const x1=cx+Math.cos(a)*(r-12),y1=cy+Math.sin(a)*(r-12);
+    const x2=cx+Math.cos(a)*(r-6),y2=cy+Math.sin(a)*(r-6);
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+    ctx.strokeStyle='rgba(0,200,255,0.2)';ctx.lineWidth=1;ctx.stroke();
+  }
+
+  // Labels
+  ctx.font='bold 8px Share Tech Mono';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,51,85,0.7)';ctx.fillText('SELL',cx-80,cy+2);
+  ctx.fillStyle='rgba(0,232,122,0.7)';ctx.fillText('BUY',cx+80,cy+2);
+  ctx.fillStyle='rgba(0,200,255,0.4)';ctx.fillText('NEUTRAL',cx,cy-85);
+
+  // TF dots around the ring
+  const tfAngles={};
+  const tfKeys=['1m','5m','15m','1h'];
+  tfKeys.forEach((tf,i)=>{
+    const d=S.tfData[tf];
+    const t=d.buy+d.sell;
+    const bp=t>100?(d.buy/t-0.5)*2:0;
+    const angle2=bp*75; // degrees from neutral
+    const rad=(angle2-90)*Math.PI/180;
+    const dotR=r-24;
+    const x=cx+Math.cos(rad)*dotR,y=cy+Math.sin(rad)*dotR;
+    ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
+    const col=bp>0.1?'#00e87a':bp<-0.1?'#ff3355':'#ffc940';
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='7px Share Tech Mono';ctx.fillStyle='rgba(200,230,255,.7)';
+    ctx.fillText(tf,x,y+(bp>0?12:-12));
+    tfAngles[tf]={x,y};
+  });
+
+  // Glowing effect if all aligned
+  if(strongAligned){
+    ctx.beginPath();ctx.arc(cx,cy,r+8,0,Math.PI*2);
+    ctx.strokeStyle=allBull>allBear?'rgba(0,232,122,0.15)':'rgba(255,51,85,0.15)';
+    ctx.lineWidth=6;ctx.stroke();
+  }
+
+  // Needle shadow
+  const needleRad=(angle-90)*Math.PI/180;
+  const nx=cx+Math.cos(needleRad)*(r-28);
+  const ny=cy+Math.sin(needleRad)*(r-28);
+  ctx.shadowBlur=12;
+  ctx.shadowColor=avg>0.1?'rgba(0,232,122,.6)':avg<-0.1?'rgba(255,51,85,.6)':'rgba(255,201,64,.4)';
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);
+  ctx.strokeStyle=avg>0.1?'#00e87a':avg<-0.1?'#ff3355':'#ffc940';
+  ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+  ctx.shadowBlur=0;
+
+  // Needle base dot
+  ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);
+  ctx.fillStyle='white';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);
+  ctx.fillStyle=avg>0.1?'#00e87a':avg<-0.1?'#ff3355':'#ffc940';ctx.fill();
+}
+
+// ═══════════════════════════════════════════════════
+// ABSORPTION COMPUTE
+// ═══════════════════════════════════════════════════
+let lastAbsBuy=-1,lastAbsSell=-1;
+function computeAbsorption(){
+  if(S.absWin.length<10)return;
+  const prices=S.absWin.map(t=>t.price);
+  const minP=Math.min(...prices),maxP=Math.max(...prices);
+  const priceRange=(maxP-minP)/((maxP+minP)/2||1);
+  const isFlat=priceRange<S.absThreshold;
+
+  const buyVol=S.absWin.filter(t=>t.isBuy).reduce((s,t)=>s+t.qty,0);
+  const sellVol=S.absWin.filter(t=>!t.isBuy).reduce((s,t)=>s+t.qty,0);
+  const tot=buyVol+sellVol||1;
+  const buyAbs=buyVol/tot*100;
+  const sellAbs=sellVol/tot*100;
+
+  document.getElementById('abs-buy-fill').style.width=buyAbs+'%';
+  document.getElementById('abs-sell-fill').style.width=sellAbs+'%';
+  document.getElementById('abs-buy-val').textContent=buyAbs.toFixed(0)+'%';
+  document.getElementById('abs-sell-val').textContent=sellAbs.toFixed(0)+'%';
+
+  const statusEl=document.getElementById('abs-status');
+  if(isFlat&&buyAbs>65){
+    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid rgba(0,232,122,.25);background:rgba(0,232,122,.06);color:var(--green);';
+    statusEl.textContent='🟢 Possible Buy Absorption — Price flat while buyers dominate. A hidden buyer may be absorbing sell pressure.';
+  } else if(isFlat&&sellAbs>65){
+    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid rgba(255,51,85,.25);background:rgba(255,51,85,.06);color:var(--red);';
+    statusEl.textContent='🔴 Possible Sell Absorption — Price flat while sellers dominate. A hidden seller may be capping any upward moves.';
+  } else if(isFlat){
+    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);';
+    statusEl.textContent='Price is flat but flow is mixed — consolidation, not clear absorption.';
+  } else{
+    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);';
+    statusEl.textContent='Price is moving — absorption monitoring active but no pattern detected.';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function renderAll(){
+  computeCompass();
+  computeAbsorption();
+  renderBaseline();
+  renderTimeline();
+  renderAnomalies();
+}
+
+function renderBaseline(){
+  if(S.tradeCount<10)return;
+  document.getElementById('bl-avg').textContent=fmtX(S.avgSize)+' XRP';
+  document.getElementById('bl-int').textContent=S.avgInterval>1000?(S.avgInterval/1000).toFixed(1)+'s':Math.round(S.avgInterval)+'ms';
+  const sessionMins=(Date.now()-S.sessionStart)/60000;
+  const wph=sessionMins>0?((S.whalesThisSession/sessionMins)*60).toFixed(1):0;
+  document.getElementById('bl-whr').textContent=wph;
+  document.getElementById('baseline-age').textContent=S.tradeCount+' TRADES';
+
+  // Anomaly engine state
+  const ae=document.getElementById('anom-state'),as2=document.getElementById('anom-sub');
+  if(S.tradeCount<BASELINE_MIN){
+    ae.textContent='CALIBRATING BASELINE';ae.style.color='var(--muted)';
+    as2.textContent=`${BASELINE_MIN-S.tradeCount} more trades needed to establish normal behaviour.`;
+    document.getElementById('anom-icon').textContent='📊';
+  }else{
+    ae.textContent='ANOMALY ENGINE ACTIVE';ae.style.color='var(--green)';
+    as2.textContent=`Watching for trades above ${ANOMALY_MULT}x session average (${fmtX(S.avgSize*ANOMALY_MULT)} XRP).`;
+    document.getElementById('anom-icon').textContent='👁';
+  }
+
+  document.getElementById('s-anom').textContent=S.anomalyCount;
+  const recentMults=S.anomalies.slice(0,5).map(a=>a.mult);
+  document.getElementById('s-mult').textContent=recentMults.length?(recentMults.reduce((a,b)=>a+b,0)/recentMults.length).toFixed(1)+'x':'0x';
+  const str=S.anomalyCount>10?'HIGH':S.anomalyCount>4?'MEDIUM':'LOW';
+  const sc=document.getElementById('s-str');sc.textContent=str;sc.style.color=str==='HIGH'?'var(--red)':str==='MEDIUM'?'var(--yellow)':'var(--green)';
+}
+
+let tlRenderedCount=0;
+function renderTimeline(){
+  document.getElementById('tl-count').textContent=S.timeline.length+' EVENTS';
+  if(!S.timeline.length)return;
+  const container=document.getElementById('timeline');
+  // Remove placeholder if present
+  const placeholder=container.querySelector('.tl-placeholder');
+  if(placeholder)placeholder.remove();
+  // Only prepend new items — don't rebuild existing ones
+  const newItems=S.timeline.slice(0,Math.max(0,S.timeline.length-tlRenderedCount));
+  if(!newItems.length)return;
+  newItems.reverse().forEach(e=>{
+    const div=document.createElement('div');
+    div.className='tl-item';
+    div.innerHTML=`
+      <div class="tl-left">
+        <div class="tl-time">${e.time}</div>
+        <div class="tl-dot ${e.type}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="tl-right">
+        <div class="tl-title ${e.type}">${e.title}</div>
+        <div class="tl-body">${e.body}</div>
+        ${e.tags&&e.tags.length?`<div class="tl-tags">${e.tags.map(t=>`<div class="tl-tag">${t}</div>`).join('')}</div>`:''}
+      </div>`;
+    container.insertBefore(div,container.firstChild);
+  });
+  tlRenderedCount=S.timeline.length;
+  // Cap DOM to 25 items
+  while(container.children.length>25)container.removeChild(container.lastChild);
+}
+
+let anomRenderedCount=0;
+function renderAnomalies(){
+  document.getElementById('anom-ct').textContent=S.anomalies.length;
+  if(!S.anomalies.length)return;
+  const container=document.getElementById('anom-list');
+  const placeholder=container.querySelector('div[style]');
+  if(placeholder&&!anomRenderedCount)container.innerHTML='';
+  // Only prepend truly new items
+  const newItems=S.anomalies.slice(0,Math.max(0,S.anomalies.length-anomRenderedCount));
+  if(!newItems.length)return;
+  newItems.reverse().forEach(a=>{
+    const div=document.createElement('div');
+    div.className=`anom-item ${a.type}`;
+    div.innerHTML=`
+      <div class="anom-hdr">
+        <div class="anom-title" style="color:${a.type==='buy'?'var(--green)':a.type==='sell'?'var(--red)':'var(--yellow)'}">${a.title}</div>
+        <div class="anom-time">${a.time}</div>
+      </div>
+      <div class="anom-body">${a.body}</div>
+      <div class="anom-stat">${a.exchange} · ${a.mult.toFixed(1)}x baseline</div>
+      <div>${a.isBurst?'<span class="sig-badge sig-anomaly">🔥 VELOCITY BURST</span>':'<span class="sig-badge sig-pattern">⚡ ANOMALOUS PRINT</span>'}</div>`;
+    container.insertBefore(div,container.firstChild);
+  });
+  anomRenderedCount=S.anomalies.length;
+  while(container.children.length>12)container.removeChild(container.lastChild);
+}
+
+// ═══════════════════════════════════════════════════
+// FORMATTERS
+// ═══════════════════════════════════════════════════
+function fmtN(n,d=2){return Number(n).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtX(n){if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.floor(n).toLocaleString('en-GB');}
+
+// ═══════════════════════════════════════════════════
+// EASTER EGG
+// ═══════════════════════════════════════════════════
+const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let ks=[],eggOn=false;
+const EGG=`SIGNAL LAYER — CLASSIFIED
+
+Three things nobody else built for you:
+
+The Drift Compass
+The Narrative Timeline
+The Anomaly Engine
+
+Not because they're easy.
+Because they're what matters.
+
+A 30K trade when average is 800 XRP
+is louder than a 500K trade
+in a noisy session.
+
+When all four timeframes align —
+that's the signal in the silence.
+
+The market tells a story.
+This writes it down.
+
+Keep watching the dark water.
+The lotus grows there.
+
+⬡  REN × WEBZY87 · SIGNAL LAYER`;
+
+function showEgg(){
+  if(eggOn)return;eggOn=true;
+  const sc=document.getElementById('eggstars');sc.innerHTML='';
+  for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${Math.random()*100}%;animation-duration:${3+Math.random()*5}s;animation-delay:${Math.random()*4}s;`;sc.appendChild(s);}
+  document.getElementById('eggtxt').textContent=EGG;
+  document.getElementById('egg').classList.add('on');
+}
+document.getElementById('egg').addEventListener('click',()=>{document.getElementById('egg').classList.remove('on');eggOn=false;});
+document.addEventListener('keydown',e=>{ks.push(e.key);if(ks.length>KONAMI.length)ks.shift();if(JSON.stringify(ks)===JSON.stringify(KONAMI))showEgg();});
+let lc=0,lt;
+document.getElementById('logoclick').addEventListener('click',()=>{lc++;clearTimeout(lt);lt=setTimeout(()=>lc=0,600);if(lc>=3)showEgg();});
+let xb='';document.addEventListener('keypress',e=>{xb=(xb+e.key).slice(-3);if(xb.toLowerCase()==='xrp')showEgg();});
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+async function init(){
+  await fetchGbp();
+  connectBinance();
+  setTimeout(connectKraken,500);
+  setTimeout(connectCoinbase,1000);
+  setTimeout(connectBitstamp,1500);
+  setTimeout(connectOKX,2000);
+  // Initial compass draw
+  drawCompass(0,0,false,0,0);
+  setInterval(()=>{renderBaseline();computeAbsorption();},8000);
+}
+init();
+</script>
+</body>
+</html>
