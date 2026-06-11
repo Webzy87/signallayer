@@ -221,7 +221,19 @@ body::after{
 ::-webkit-scrollbar{width:2px;}
 ::-webkit-scrollbar-thumb{background:var(--border);}
 
-/* EGG */
+#timeline,#anom-list{
+  contain:layout style;
+}
+.tl-item,.anom-item,.af-item{
+  contain:layout style;
+  will-change:opacity,transform;
+}
+#compass-canvas{
+  will-change:auto;
+}
+.abs-fill,.pbar-fill,.ob-dfill{
+  will-change:width;
+}
 #egg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:9999;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:24px;}
 #egg.on{display:flex;}
 #eggstars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
@@ -836,10 +848,14 @@ function computeAbsorption(){
   const buyAbs=buyVol/tot*100;
   const sellAbs=sellVol/tot*100;
 
-  document.getElementById('abs-buy-fill').style.width=buyAbs+'%';
-  document.getElementById('abs-sell-fill').style.width=sellAbs+'%';
-  document.getElementById('abs-buy-val').textContent=buyAbs.toFixed(0)+'%';
-  document.getElementById('abs-sell-val').textContent=sellAbs.toFixed(0)+'%';
+  // Only update DOM if values changed meaningfully
+  if(Math.abs(buyAbs-lastAbsBuy)>1||Math.abs(sellAbs-lastAbsSell)>1){
+    lastAbsBuy=buyAbs;lastAbsSell=sellAbs;
+    document.getElementById('abs-buy-fill').style.width=buyAbs+'%';
+    document.getElementById('abs-sell-fill').style.width=sellAbs+'%';
+    document.getElementById('abs-buy-val').textContent=buyAbs.toFixed(0)+'%';
+    document.getElementById('abs-sell-val').textContent=sellAbs.toFixed(0)+'%';
+  }
 
   const statusEl=document.getElementById('abs-status');
   if(isFlat&&buyAbs>65){
@@ -861,11 +877,12 @@ function computeAbsorption(){
 // RENDER
 // ═══════════════════════════════════════════════════
 function renderAll(){
-  computeCompass();
-  computeAbsorption();
+  // kept for periodic slow refresh only
   renderBaseline();
   renderTimeline();
   renderAnomalies();
+  computeAbsorption();
+  computeCompass();
 }
 
 function renderBaseline(){
