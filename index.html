@@ -3,18 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>XRP SIGNAL LAYER · webzy87</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#020b16;--bg2:#061220;--bg3:#0a1828;
-  --panel:rgba(4,12,24,0.98);
-  --border:rgba(0,200,255,0.1);--border2:rgba(0,200,255,0.06);
-  --accent:#00c8ff;--green:#00e87a;--red:#ff3355;
-  --yellow:#ffc940;--whale:#ff6b35;
-  --muted:rgba(160,200,240,0.42);--text:#cce4ff;
-  --glow:0 0 16px rgba(0,200,255,0.22);
-  --r:5px;
+  --bg:#020910;--bg2:#05111f;--bg3:#081828;
+  --panel:rgba(4,11,22,0.98);
+  --border:rgba(80,160,255,0.1);--border2:rgba(80,160,255,0.06);
+  --accent:#00c8ff;--purple:#a855f7;--purple2:#7c3aed;
+  --green:#00e87a;--red:#ff3355;--yellow:#ffc940;
+  --whale:#ff6b35;--blue:#3b82f6;
+  --muted:rgba(150,190,240,0.42);--text:#cce4ff;
+  --glow:0 0 20px rgba(0,200,255,0.2);
+  --glow-p:0 0 20px rgba(168,85,247,0.25);
+  --r:6px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html{-webkit-text-size-adjust:100%;}
@@ -22,375 +25,501 @@ body{
   background:var(--bg);color:var(--text);
   font-family:'DM Sans',sans-serif;font-size:13px;
   min-height:100vh;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
+  -webkit-overflow-scrolling:touch;overflow-y:auto;
 }
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.022) 3px,rgba(0,0,0,0.022) 4px);
-}
-body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(0,200,255,0.015) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,200,255,0.015) 1px,transparent 1px);
-  background-size:52px 52px;
-}
-#app{position:relative;z-index:1;}
+/* scanlines */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:998;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.02) 3px,rgba(0,0,0,0.02) 4px);}
+/* grid bg */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(80,120,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(80,120,255,0.012) 1px,transparent 1px);
+  background-size:54px 54px;}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
 
 /* ── TOPBAR ── */
 #topbar{
   position:sticky;top:0;z-index:200;
-  background:rgba(2,11,22,0.98);border-bottom:1px solid var(--border);
-  padding:8px 14px;display:flex;align-items:center;justify-content:space-between;
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(2,9,16,0.97);
+  border-bottom:1px solid var(--border);
+  padding:8px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
 }
-.logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:3px;color:var(--accent);text-shadow:var(--glow);cursor:pointer;user-select:none;}
-.logo em{color:var(--whale);font-style:normal;}
-.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;animation:dp 1.5s ease-in-out infinite;}
+#topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--purple),var(--accent),var(--purple),transparent);opacity:.4;
+  animation:scanH 5s linear infinite;}
+@keyframes scanH{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:3px;
+  background:linear-gradient(90deg,var(--accent),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;cursor:pointer;user-select:none;white-space:nowrap;}
+.sub{font-size:7px;color:var(--muted);letter-spacing:2px;margin-top:1px;font-family:'Share Tech Mono',monospace;display:flex;align-items:center;gap:4px;}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;animation:dp 1.5s ease-in-out infinite;}
 .dot.live{background:var(--green);box-shadow:0 0 6px var(--green);}
 .dot.warn{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+.dot.dead{background:var(--red);box-shadow:0 0 6px var(--red);}
 @keyframes dp{0%,100%{opacity:1}50%{opacity:.28}}
-.topbtn{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;padding:5px 9px;cursor:pointer;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;}
-.topbtn.active{background:rgba(0,200,255,.1);border-color:var(--accent);color:var(--accent);}
+.tbtn{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;padding:5px 9px;
+  cursor:pointer;border-radius:var(--r);border:1px solid var(--border);
+  background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;}
+.tbtn.on{background:rgba(168,85,247,.12);border-color:var(--purple);color:var(--purple);}
+.tbtn.sound-on{background:rgba(0,200,255,.1);border-color:var(--accent);color:var(--accent);}
+.hprice{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);}
 
 /* ── LAYOUT ── */
-#scroll{display:flex;flex-direction:column;gap:0;}
-.section{padding:5px 8px;}
+.page{padding:6px;}
+.grid{display:grid;gap:6px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:1fr 1fr 1fr;}
 
 /* ── CARD ── */
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:5px;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.28;}
-.ct{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;}
-.badge{font-size:7px;background:rgba(0,200,255,.06);border:1px solid var(--border2);padding:2px 6px;border-radius:2px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px;position:relative;overflow:hidden;contain:layout style;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--purple),transparent);opacity:.35;}
+.ct{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--purple);
+  margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2);
+  display:flex;justify-content:space-between;align-items:center;}
+.badge{font-size:7px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);
+  padding:2px 6px;border-radius:2px;color:var(--purple);font-family:'Share Tech Mono',monospace;}
+
+/* ── SO-WHAT BLOCK ── */
+.sw-block{margin-top:6px;padding:7px 9px;background:rgba(0,0,0,.25);border-radius:4px;border-left:2px solid var(--purple);}
+.sw-label{font-size:8px;color:var(--purple);letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:3px;}
+.sw-meaning{font-size:11px;color:rgba(200,225,255,.85);line-height:1.55;margin-bottom:3px;}
+.sw-action{font-size:10px;color:var(--muted);font-style:italic;}
+
+/* ── VERDICT BOX ── */
+#verdict{
+  padding:14px;border-radius:var(--r);margin-bottom:6px;
+  border:2px solid transparent;position:relative;overflow:hidden;
+  transition:all .5s ease;
+}
+#verdict::before{content:'';position:absolute;inset:0;background:inherit;z-index:-1;}
+#verdict-scan{position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.03),transparent);
+  animation:vscan 3s linear infinite;}
+@keyframes vscan{0%{left:-60%}100%{left:120%}}
+#v-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+#v-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:3px;color:var(--muted);}
+#v-time{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);}
+#v-main{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+#v-icon{font-size:32px;flex-shrink:0;}
+#v-reading{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;letter-spacing:2px;}
+#v-conf{font-size:11px;margin-top:2px;opacity:.75;}
+#v-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
+.vg-item{text-align:center;padding:5px;background:rgba(0,0,0,.2);border-radius:3px;border:1px solid var(--border2);}
+.vg-l{font-size:7px;color:var(--muted);letter-spacing:1px;font-family:'Share Tech Mono',monospace;margin-bottom:2px;}
+.vg-v{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;}
+#v-move{font-size:12px;padding:7px 10px;border-radius:3px;text-align:center;font-style:italic;border:1px solid var(--border2);background:rgba(0,0,0,.25);}
+
+/* ── CONFIDENCE METER ── */
+.conf-meter{margin:6px 0;}
+.conf-label{display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px;}
+.conf-track{height:10px;background:rgba(255,255,255,.05);border-radius:5px;overflow:hidden;position:relative;}
+.conf-fill{height:100%;border-radius:5px;transition:width .6s ease;position:relative;}
+.conf-fill::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.2) 50%,transparent 100%);
+  animation:shimmer 2s linear infinite;}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.conf-block-track{display:flex;gap:2px;margin-top:4px;}
+.conf-block{flex:1;height:6px;border-radius:2px;transition:all .4s ease;}
+.conf-reading{text-align:center;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;margin-top:4px;}
+
+/* ── MARKET MOOD ── */
+#mood-display{text-align:center;padding:12px 8px;}
+#mood-icon{font-size:52px;margin-bottom:6px;display:block;animation:moodpulse 2s ease-in-out infinite;}
+@keyframes moodpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+#mood-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;letter-spacing:2px;margin-bottom:4px;}
+#mood-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.mood-bars{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.mb-item{text-align:center;}
+.mb-label{font-size:7px;color:var(--muted);letter-spacing:1px;font-family:'Share Tech Mono',monospace;margin-bottom:3px;}
+.mb-bar{height:40px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden;display:flex;flex-direction:column-reverse;}
+.mb-fill{width:100%;border-radius:3px;transition:height .6s ease;}
+.mb-val{font-size:8px;color:var(--muted);margin-top:2px;font-family:'Share Tech Mono',monospace;}
 
 /* ── DRIFT COMPASS ── */
-#compass-wrap{
-  display:flex;flex-direction:column;align-items:center;
-  padding:10px 0 6px;
-}
-#compass-canvas{display:block;}
-#compass-reading{
-  font-family:'Orbitron',monospace;font-size:20px;font-weight:900;
-  margin-top:8px;letter-spacing:2px;
-}
-#compass-sub{font-size:10px;color:var(--muted);margin-top:3px;text-align:center;max-width:260px;line-height:1.5;}
-#compass-action{
-  margin-top:10px;padding:8px 16px;border-radius:3px;
-  font-family:'Orbitron',monospace;font-size:11px;font-weight:700;
-  letter-spacing:1px;text-align:center;border:1px solid transparent;
-}
-
-/* TF ALIGNMENT BARS */
-#tf-alignment{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px;}
-.tfa{text-align:center;padding:6px 4px;border-radius:3px;border:1px solid var(--border2);background:rgba(0,0,0,.2);}
-.tfa-label{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;}
-.tfa-arrow{font-size:20px;margin-bottom:2px;}
-.tfa-val{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;}
-.tfa-sub{font-size:8px;color:var(--muted);margin-top:1px;}
+#compass-wrap{display:flex;flex-direction:column;align-items:center;padding:6px 0;}
+#compass-canvas{display:block;max-width:100%;height:auto;}
+#compass-reading{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;margin-top:6px;letter-spacing:2px;}
+#compass-sub{font-size:10px;color:var(--muted);margin-top:2px;text-align:center;max-width:240px;line-height:1.5;}
+#tf-alignment{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:10px;}
+.tfa{text-align:center;padding:6px 3px;border-radius:3px;border:1px solid var(--border2);background:rgba(0,0,0,.2);transition:all .4s ease;}
+.tfa-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;}
+.tfa-arrow{font-size:18px;margin-bottom:1px;}
+.tfa-val{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;}
 .tfa.bull{border-color:rgba(0,232,122,.25);background:rgba(0,232,122,.05);}
 .tfa.bear{border-color:rgba(255,51,85,.25);background:rgba(255,51,85,.05);}
-.tfa.flat{border-color:rgba(255,201,64,.15);background:rgba(255,201,64,.03);}
-
-/* ALIGNMENT READING */
-#align-reading{
-  margin-top:8px;padding:8px 12px;border-radius:3px;
-  background:rgba(0,0,0,.25);border:1px solid var(--border2);
-  text-align:center;
-}
-#align-main{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;margin-bottom:3px;}
+.tfa.flat{border-color:rgba(255,201,64,.12);background:rgba(255,201,64,.03);}
+#align-box{margin-top:8px;padding:8px 10px;border-radius:3px;background:rgba(0,0,0,.25);border:1px solid var(--border2);text-align:center;}
+#align-main{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;margin-bottom:3px;}
 #align-sub{font-size:10px;color:var(--muted);line-height:1.5;}
 
+/* ── BATTLEFIELD ── */
+.bf-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);}
+.bf-row:last-child{border-bottom:none;}
+.bf-icon{font-size:16px;flex-shrink:0;width:22px;text-align:center;}
+.bf-label{font-size:9px;color:var(--muted);width:68px;flex-shrink:0;font-family:'Share Tech Mono',monospace;letter-spacing:1px;}
+.bf-bar-wrap{flex:1;}
+.bf-bar-track{height:7px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
+.bf-bar-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+.bf-val{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;width:38px;text-align:right;flex-shrink:0;}
+#bf-sentence{margin-top:10px;padding:8px 10px;border-radius:3px;font-size:12px;line-height:1.6;
+  background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);font-style:italic;color:rgba(200,220,255,.9);}
+#bf-sentence::before{content:'"';color:var(--purple);margin-right:2px;}
+#bf-sentence::after{content:'"';color:var(--purple);margin-left:2px;}
+
+/* ── WHALE TRACKER ── */
+.whale-item{padding:8px 10px;border-radius:4px;margin-bottom:4px;border-left:3px solid transparent;
+  background:rgba(255,255,255,.02);contain:layout style;animation:wIn .3s ease;}
+@keyframes wIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.whale-item.buy{border-left-color:var(--green);background:rgba(0,232,122,.025);}
+.whale-item.sell{border-left-color:var(--red);background:rgba(255,51,85,.025);}
+.whale-item.mega{border-left-color:var(--whale);background:rgba(255,107,53,.04);}
+.wh-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;}
+.wh-title{font-size:12px;font-weight:700;}
+.wh-title.buy{color:var(--green);}
+.wh-title.sell{color:var(--red);}
+.wh-title.mega{color:var(--whale);}
+.wh-time{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);}
+.wh-detail{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.wh-meaning{font-size:10px;color:rgba(200,220,255,.75);font-style:italic;}
+.wh-exchange{font-size:8px;padding:1px 6px;border-radius:10px;background:rgba(0,200,255,.08);border:1px solid var(--border2);color:var(--accent);font-family:'Share Tech Mono',monospace;}
+
 /* ── ANOMALY ENGINE ── */
-#anomaly-status{
-  display:flex;align-items:center;gap:10px;padding:8px 10px;
-  border-radius:3px;background:rgba(0,0,0,.2);border:1px solid var(--border2);
-  margin-bottom:8px;
-}
-#anom-icon{font-size:24px;flex-shrink:0;}
-#anom-state{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
-#anom-sub{font-size:10px;color:var(--muted);margin-top:1px;}
-
-.anom-item{
-  padding:8px 10px;border-radius:3px;margin-bottom:4px;
-  border-left:3px solid transparent;
-  background:rgba(255,255,255,.02);
-  animation:ain .3s ease;
-}
-@keyframes ain{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-.anom-item.buy{border-left-color:var(--green);background:rgba(0,232,122,.03);}
-.anom-item.sell{border-left-color:var(--red);background:rgba(255,51,85,.03);}
+.anom-item{padding:8px 10px;border-radius:4px;margin-bottom:4px;
+  border-left:3px solid transparent;background:rgba(255,255,255,.02);
+  contain:layout style;animation:wIn .3s ease;}
+.anom-item.buy{border-left-color:var(--green);}
+.anom-item.sell{border-left-color:var(--red);}
 .anom-item.neutral{border-left-color:var(--yellow);}
-.anom-item.whale{border-left-color:var(--whale);background:rgba(255,107,53,.04);}
-.anom-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;}
+.anom-item.whale{border-left-color:var(--whale);}
+.anom-hdr{display:flex;justify-content:space-between;margin-bottom:3px;}
 .anom-title{font-size:12px;font-weight:700;}
-.anom-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);}
-.anom-body{font-size:11px;color:rgba(180,210,240,.8);line-height:1.55;margin-bottom:3px;}
-.anom-stat{font-size:9px;color:var(--muted);font-style:italic;}
-.sig-badge{
-  display:inline-flex;align-items:center;gap:3px;
-  font-size:8px;padding:2px 7px;border-radius:10px;margin-top:4px;
-  font-family:'Share Tech Mono',monospace;letter-spacing:.5px;
-}
-.sig-anomaly{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);color:var(--whale);}
-.sig-strong{background:rgba(255,51,85,.15);border:1px solid rgba(255,51,85,.3);color:var(--red);}
-.sig-pattern{background:rgba(255,201,64,.12);border:1px solid rgba(255,201,64,.25);color:var(--yellow);}
-.sig-iceberg{background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.2);color:var(--accent);}
+.anom-time{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.anom-body{font-size:10px;color:rgba(180,210,240,.75);line-height:1.5;margin-bottom:3px;}
+.sig-badge{display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:2px 7px;
+  border-radius:10px;font-family:'Share Tech Mono',monospace;letter-spacing:.5px;}
+.sig-burst{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.3);color:var(--whale);}
+.sig-anom{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25);color:var(--purple);}
 
-/* ── NARRATIVE TIMELINE ── */
-#timeline{display:flex;flex-direction:column;gap:0;}
-.tl-item{
-  display:flex;gap:10px;padding:8px 4px;
-  border-bottom:1px solid var(--border2);
-  position:relative;
-  animation:ain .3s ease;
-}
-.tl-item:last-child{border-bottom:none;}
-.tl-left{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;width:40px;}
-.tl-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;}
-.tl-dot{width:10px;height:10px;border-radius:50%;margin:4px auto;flex-shrink:0;position:relative;}
-.tl-dot::after{
-  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:16px;height:16px;border-radius:50%;opacity:.25;
-}
-.tl-dot.buy{background:var(--green);box-shadow:0 0 6px rgba(0,232,122,.5);}
-.tl-dot.buy::after{background:var(--green);}
-.tl-dot.sell{background:var(--red);box-shadow:0 0 6px rgba(255,51,85,.5);}
-.tl-dot.sell::after{background:var(--red);}
-.tl-dot.neutral{background:var(--yellow);}
-.tl-dot.whale{background:var(--whale);box-shadow:0 0 8px rgba(255,107,53,.6);}
-.tl-dot.anomaly{background:var(--accent);box-shadow:0 0 8px rgba(0,200,255,.5);}
-.tl-line{width:1px;flex:1;background:var(--border2);min-height:8px;}
-.tl-right{flex:1;}
-.tl-title{font-size:12px;font-weight:700;margin-bottom:2px;}
-.tl-title.buy{color:var(--green);}
-.tl-title.sell{color:var(--red);}
-.tl-title.neutral{color:var(--yellow);}
-.tl-title.whale{color:var(--whale);}
-.tl-title.anomaly{color:var(--accent);}
-.tl-body{font-size:11px;color:rgba(180,210,240,.75);line-height:1.6;}
-.tl-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
-.tl-tag{font-size:8px;padding:1px 6px;border-radius:10px;border:1px solid var(--border2);color:var(--muted);font-family:'Share Tech Mono',monospace;}
+/* ── ALERT FEED ── */
+.af-item{padding:6px 9px;border-radius:3px;margin-bottom:3px;border-left:3px solid transparent;
+  background:rgba(255,255,255,.018);contain:layout style;animation:wIn .25s ease;}
+.af-item.buy{border-left-color:var(--green);}
+.af-item.sell{border-left-color:var(--red);}
+.af-item.neutral{border-left-color:var(--yellow);}
+.af-item.whale{border-left-color:var(--whale);}
+.af-item.info{border-left-color:var(--purple);}
+.af-time{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:1px;}
+.af-msg{font-size:11px;font-weight:600;margin-bottom:1px;}
+.af-detail{font-size:9px;color:var(--muted);line-height:1.4;}
+.imp{display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:1px 5px;border-radius:8px;margin-top:3px;font-family:'Share Tech Mono',monospace;}
+.imp.low{background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.18);color:var(--green);}
+.imp.med{background:rgba(255,201,64,.08);border:1px solid rgba(255,201,64,.2);color:var(--yellow);}
+.imp.high{background:rgba(255,51,85,.12);border:1px solid rgba(255,51,85,.22);color:var(--red);}
 
-/* ── STATS ROW ── */
-#stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:5px;}
-.stat-mini{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:8px;text-align:center;}
-.stat-mini .sl{font-size:7px;color:var(--muted);letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:3px;}
-.stat-mini .sv{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
-.stat-mini .ss{font-size:8px;color:var(--muted);margin-top:1px;}
+/* ── ABSORPTION ── */
+.abs-row{margin:5px 0;}
+.abs-lbl{display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px;}
+.abs-track{height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;}
+.abs-fill{height:100%;border-radius:4px;transition:width .5s ease;will-change:width;}
+#abs-status{font-size:11px;padding:6px 9px;border-radius:3px;margin-top:5px;border:1px solid var(--border2);}
 
-/* ── BASELINE CARD ── */
-#baseline-card{padding:8px 10px;background:rgba(0,0,0,.2);border:1px solid var(--border2);border-radius:3px;font-size:9px;color:var(--muted);margin-bottom:8px;}
-#baseline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;}
-.bstat{text-align:center;}
-.bstat .bl{font-size:8px;color:var(--muted);margin-bottom:2px;}
-.bstat .bv{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text);}
+/* ── BASELINE ── */
+.bl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;}
+.bl-item{text-align:center;background:rgba(0,0,0,.2);border-radius:3px;padding:6px;border:1px solid var(--border2);}
+.bl-l{font-size:7px;color:var(--muted);letter-spacing:1px;font-family:'Share Tech Mono',monospace;margin-bottom:2px;}
+.bl-v{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text);}
 
-/* ── ABSORPTION PANEL ── */
-#absorption-meter{margin-bottom:8px;}
-.abs-label{display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px;}
-.abs-track{height:10px;background:rgba(255,255,255,.04);border-radius:5px;overflow:hidden;position:relative;}
-.abs-fill{height:100%;border-radius:5px;transition:width .5s ease;}
-.abs-marker{position:absolute;top:0;height:100%;width:2px;background:rgba(255,255,255,.3);}
-#abs-status{font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid var(--border2);}
-
-/* ── DESKTOP ── */
-@media(min-width:900px){
-  #scroll{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:5px;padding:5px;
-    height:calc(100vh - 52px);
-    overflow:hidden;
-    align-items:start;
-  }
-  .col{overflow-y:auto;height:calc(100vh - 62px);scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding:2px;}
-  .section{padding:0;}
-}
-@media(max-width:899px){
-  #scroll{display:block;padding:4px 6px;}
-  .col{width:100%;}
-}
-
-/* helpers */
+/* ── HELPERS ── */
 .green{color:var(--green);}
 .red{color:var(--red);}
 .yellow{color:var(--yellow);}
-.wc{color:var(--whale);}
+.purple{color:var(--purple);}
 .accent{color:var(--accent);}
+.wc{color:var(--whale);}
 .muted{color:var(--muted);}
 .mono{font-family:'Orbitron',monospace;}
-::-webkit-scrollbar{width:2px;}
-::-webkit-scrollbar-thumb{background:var(--border);}
+.tar{text-align:right;}
+.tac{text-align:center;}
+.divider{height:1px;background:var(--border2);margin:10px 0;}
 
-#timeline,#anom-list{
-  contain:layout style;
+/* ── DESKTOP ── */
+@media(min-width:900px){
+  body{overflow:hidden;height:100vh;}
+  #app{height:100vh;}
+  #scroll-area{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:6px;
+    height:calc(100vh - 52px);overflow:hidden;}
+  .col{overflow-y:auto;height:100%;scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding:1px;}
 }
-.tl-item,.anom-item,.af-item{
-  contain:layout style;
-  will-change:opacity,transform;
+@media(max-width:899px){
+  #scroll-area{display:block;padding:5px;}
+  .col{width:100%;}
+  .g2{grid-template-columns:1fr;}
+  .g3{grid-template-columns:1fr;}
 }
-#compass-canvas{
-  will-change:auto;
-}
-.abs-fill,.pbar-fill,.ob-dfill{
-  will-change:width;
-}
-#egg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:9999;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:24px;}
+
+/* ── EGG ── */
+#egg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:9999;
+  flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:24px;}
 #egg.on{display:flex;}
 #eggstars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
-.star{position:absolute;width:2px;height:2px;background:var(--accent);border-radius:50%;animation:sf linear infinite;opacity:0;}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;animation:sf linear infinite;opacity:0;}
 @keyframes sf{0%{opacity:0;transform:translateY(-10px)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateY(100vh)}}
-#eggxrp{font-family:'Orbitron',monospace;font-size:44px;font-weight:900;color:var(--whale);text-shadow:0 0 28px rgba(255,107,53,.5);margin-bottom:12px;animation:flt 3s ease-in-out infinite;}
+#eggxrp{font-family:'Orbitron',monospace;font-size:44px;font-weight:900;
+  background:linear-gradient(90deg,var(--accent),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:12px;animation:flt 3s ease-in-out infinite;}
 @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-#eggtxt{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent);text-align:center;max-width:420px;line-height:2.1;text-shadow:var(--glow);white-space:pre-wrap;}
+#eggtxt{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent);
+  text-align:center;max-width:420px;line-height:2.1;white-space:pre-wrap;}
 #eggclose{font-size:9px;color:var(--muted);margin-top:20px;letter-spacing:3px;opacity:0;animation:fi .8s ease 3s forwards;}
 @keyframes fi{to{opacity:1}}
-#khint{position:fixed;bottom:4px;right:8px;font-size:6px;color:rgba(0,200,255,.04);z-index:1000;user-select:none;transition:color .4s;}
-#khint:hover{color:rgba(0,200,255,.14);}
+#khint{position:fixed;bottom:4px;right:8px;font-size:6px;color:rgba(168,85,247,.04);z-index:1000;user-select:none;transition:color .4s;}
+#khint:hover{color:rgba(168,85,247,.15);}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:rgba(168,85,247,.2);}
 </style>
 </head>
 <body>
 <div id="app">
 
+<!-- TOPBAR -->
 <div id="topbar">
   <div>
-    <div class="logo" id="logoclick">XRP <em>SIGNAL</em> LAYER</div>
-    <div style="font-size:7px;color:var(--muted);letter-spacing:2px;margin-top:1px;font-family:'Share Tech Mono',monospace;">
-      <span class="dot warn" id="dot"></span><span id="ctxt">CONNECTING...</span>
-    </div>
+    <div class="logo" id="logoclick">XRP SIGNAL LAYER</div>
+    <div class="sub"><span class="dot warn" id="dot"></span><span id="ctxt">CONNECTING...</span></div>
   </div>
-  <div style="display:flex;gap:6px;align-items:center;">
-    <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--accent);" id="hp">£-.----</div>
-    <button class="topbtn" id="soundbtn" onclick="toggleSound()">🔔</button>
-    <a href="index.html" class="topbtn" style="text-decoration:none;">← CMD</a>
+  <div style="display:flex;align-items:center;gap:7px;">
+    <div class="hprice" id="hp">£-.----</div>
+    <button class="tbtn" id="soundbtn" onclick="toggleSound()">🔔</button>
+    <a href="index.html" class="tbtn" style="text-decoration:none;">← CMD</a>
   </div>
 </div>
 
-<div id="scroll">
+<div id="scroll-area">
 
-<!-- COL 1: COMPASS + ANOMALY ENGINE -->
+<!-- ══ COL 1: VERDICT + MOOD + BATTLEFIELD ══ -->
 <div class="col">
 
-  <!-- DRIFT COMPASS -->
-  <div class="card">
-    <div class="ct">
-      DRIFT COMPASS
-      <span class="badge" id="compass-badge">CALCULATING</span>
-    </div>
-
-    <div id="compass-wrap">
-      <canvas id="compass-canvas" width="220" height="220"></canvas>
-      <div id="compass-reading" class="yellow">--</div>
-      <div id="compass-sub">Waiting for data across all timeframes...</div>
-      <div id="compass-action"></div>
-    </div>
-
-    <div id="tf-alignment">
-      <div class="tfa flat" id="tfa-1m"><div class="tfa-label">1 MIN</div><div class="tfa-arrow" id="arr-1m">→</div><div class="tfa-val" id="tfa-val-1m">--</div><div class="tfa-sub" id="tfa-sub-1m">flat</div></div>
-      <div class="tfa flat" id="tfa-5m"><div class="tfa-label">5 MIN</div><div class="tfa-arrow" id="arr-5m">→</div><div class="tfa-val" id="tfa-val-5m">--</div><div class="tfa-sub" id="tfa-sub-5m">flat</div></div>
-      <div class="tfa flat" id="tfa-15m"><div class="tfa-label">15 MIN</div><div class="tfa-arrow" id="arr-15m">→</div><div class="tfa-val" id="tfa-val-15m">--</div><div class="tfa-sub" id="tfa-sub-15m">flat</div></div>
-      <div class="tfa flat" id="tfa-1h"><div class="tfa-label">1 HOUR</div><div class="tfa-arrow" id="arr-1h">→</div><div class="tfa-val" id="tfa-val-1h">--</div><div class="tfa-sub" id="tfa-sub-1h">flat</div></div>
-    </div>
-
-    <div id="align-reading">
-      <div id="align-main" class="yellow">AWAITING DATA</div>
-      <div id="align-sub">All four timeframes need data before alignment can be read.</div>
+  <!-- ROSE VERDICT -->
+  <div class="page" style="padding-bottom:0;">
+    <div id="verdict">
+      <div id="verdict-scan"></div>
+      <div id="v-header">
+        <span id="v-label">SIGNAL VERDICT</span>
+        <span id="v-time">--:--:--</span>
+      </div>
+      <div id="v-main">
+        <div id="v-icon">🟡</div>
+        <div>
+          <div id="v-reading" class="yellow">LOADING...</div>
+          <div id="v-conf">Confidence: --% · Risk: --</div>
+        </div>
+      </div>
+      <div id="v-grid">
+        <div class="vg-item"><div class="vg-l">JON SCORE</div><div class="vg-v" id="vg-score" style="color:var(--yellow)">--</div></div>
+        <div class="vg-item"><div class="vg-l">SIGNAL STR</div><div class="vg-v" id="vg-str" style="color:var(--muted)">--</div></div>
+        <div class="vg-item"><div class="vg-l">MOMENTUM</div><div class="vg-v" id="vg-mom" style="color:var(--muted)">--</div></div>
+      </div>
+      <div id="v-move">Best move: watching for data...</div>
     </div>
   </div>
 
-  <!-- ABSORPTION DETECTOR -->
-  <div class="card">
-    <div class="ct">ABSORPTION DETECTOR</div>
-    <div id="absorption-meter">
-      <div class="abs-label">
-        <span class="green">BUY ABSORPTION</span>
-        <span id="abs-buy-val" class="green">0%</span>
+  <!-- CONFIDENCE METER -->
+  <div class="page" style="padding-bottom:0;">
+    <div class="card">
+      <div class="ct">SIGNAL CONFIDENCE METER</div>
+      <div class="conf-meter">
+        <div class="conf-label">
+          <span class="muted" style="font-family:'Share Tech Mono',monospace;font-size:8px;">CONFIDENCE</span>
+          <span class="mono" id="conf-pct" style="font-size:11px;font-weight:700;color:var(--yellow);">--%</span>
+        </div>
+        <div class="conf-track"><div class="conf-fill" id="conf-fill" style="width:0%;background:var(--yellow);"></div></div>
+        <div class="conf-block-track" id="conf-blocks"></div>
+        <div class="conf-reading" id="conf-reading" style="color:var(--yellow);">NEUTRAL</div>
       </div>
-      <div class="abs-track" style="margin-bottom:6px;">
-        <div class="abs-fill" id="abs-buy-fill" style="background:var(--green);width:0%"></div>
-      </div>
-      <div class="abs-label">
-        <span class="red">SELL ABSORPTION</span>
-        <span id="abs-sell-val" class="red">0%</span>
-      </div>
-      <div class="abs-track">
-        <div class="abs-fill" id="abs-sell-fill" style="background:var(--red);width:0%"></div>
+      <div class="sw-block">
+        <div class="sw-label">SO WHAT?</div>
+        <div class="sw-meaning" id="conf-meaning">Waiting for data across all signals...</div>
+        <div class="sw-action" id="conf-action">--</div>
       </div>
     </div>
-    <div id="abs-status" style="color:var(--muted);">
-      Watching for absorption patterns...
+  </div>
+
+  <!-- MARKET MOOD -->
+  <div class="page" style="padding-bottom:0;">
+    <div class="card">
+      <div class="ct">MARKET MOOD <span class="badge" id="mood-badge">--</span></div>
+      <div id="mood-display">
+        <span id="mood-icon">🟡</span>
+        <div id="mood-name" style="color:var(--yellow);">CALCULATING...</div>
+        <div id="mood-desc">Waiting for sufficient data...</div>
+      </div>
+      <div class="mood-bars">
+        <div class="mb-item"><div class="mb-label">VOLATILITY</div><div class="mb-bar"><div class="mb-fill" id="mb-vol" style="background:var(--accent);height:0%"></div></div><div class="mb-val" id="mb-vol-v">--</div></div>
+        <div class="mb-item"><div class="mb-label">VOLUME</div><div class="mb-bar"><div class="mb-fill" id="mb-volume" style="background:var(--purple);height:0%"></div></div><div class="mb-val" id="mb-volume-v">--</div></div>
+        <div class="mb-item"><div class="mb-label">BUY PRESS</div><div class="mb-bar"><div class="mb-fill" id="mb-bp" style="background:var(--green);height:0%"></div></div><div class="mb-val" id="mb-bp-v">--</div></div>
+        <div class="mb-item"><div class="mb-label">MOMENTUM</div><div class="mb-bar"><div class="mb-fill" id="mb-mom" style="background:var(--yellow);height:0%"></div></div><div class="mb-val" id="mb-mom-v">--</div></div>
+      </div>
+      <div class="sw-block" style="margin-top:10px;">
+        <div class="sw-label">SO WHAT?</div>
+        <div class="sw-meaning" id="mood-meaning">--</div>
+        <div class="sw-action" id="mood-action">--</div>
+      </div>
     </div>
-    <div style="margin-top:8px;font-size:9px;color:var(--muted);line-height:1.6;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:3px;">
-      <span style="color:var(--accent);">What is absorption?</span> When price stays flat while large orders keep hitting one side without moving price — someone is quietly filling a position. Buy absorption = hidden buyer. Sell absorption = hidden seller.
+  </div>
+
+  <!-- BATTLEFIELD STATUS -->
+  <div class="page">
+    <div class="card">
+      <div class="ct">BATTLEFIELD STATUS</div>
+      <div class="bf-row">
+        <div class="bf-icon">⚔️</div>
+        <div class="bf-label">TREND</div>
+        <div class="bf-bar-wrap"><div class="bf-bar-track"><div class="bf-bar-fill" id="bf-trend" style="background:var(--yellow);width:50%"></div></div></div>
+        <div class="bf-val" id="bf-trend-v" style="color:var(--yellow)">--</div>
+      </div>
+      <div class="bf-row">
+        <div class="bf-icon">💥</div>
+        <div class="bf-label">PRESSURE</div>
+        <div class="bf-bar-wrap"><div class="bf-bar-track"><div class="bf-bar-fill" id="bf-press" style="background:var(--green);width:50%"></div></div></div>
+        <div class="bf-val" id="bf-press-v" style="color:var(--green)">--</div>
+      </div>
+      <div class="bf-row">
+        <div class="bf-icon">📊</div>
+        <div class="bf-label">VOLUME</div>
+        <div class="bf-bar-wrap"><div class="bf-bar-track"><div class="bf-bar-fill" id="bf-vol" style="background:var(--accent);width:30%"></div></div></div>
+        <div class="bf-val" id="bf-vol-v" style="color:var(--accent)">--</div>
+      </div>
+      <div class="bf-row">
+        <div class="bf-icon">⚡</div>
+        <div class="bf-label">VOLATILITY</div>
+        <div class="bf-bar-wrap"><div class="bf-bar-track"><div class="bf-bar-fill" id="bf-volt" style="background:var(--yellow);width:20%"></div></div></div>
+        <div class="bf-val" id="bf-volt-v" style="color:var(--yellow)">--</div>
+      </div>
+      <div id="bf-sentence">Waiting for market data...</div>
+      <div class="sw-block" style="margin-top:8px;">
+        <div class="sw-label">SO WHAT?</div>
+        <div class="sw-meaning" id="bf-meaning">--</div>
+        <div class="sw-action" id="bf-action">--</div>
+      </div>
     </div>
   </div>
 
 </div><!-- /col1 -->
 
-<!-- COL 2: NARRATIVE TIMELINE -->
+<!-- ══ COL 2: COMPASS + WHALE TRACKER + ANOMALY ══ -->
 <div class="col">
 
-  <!-- BASELINE STATS -->
-  <div class="card">
-    <div class="ct">SESSION BASELINE <span class="badge" id="baseline-age">--</span></div>
-    <div id="baseline-card">
-      These are the session averages. Anomaly engine flags anything significantly above these numbers.
-    </div>
-    <div id="baseline-grid">
-      <div class="bstat"><div class="bl">AVG TRADE SIZE</div><div class="bv" id="bl-avg">--</div></div>
-      <div class="bstat"><div class="bl">AVG INTERVAL</div><div class="bv" id="bl-int">--</div></div>
-      <div class="bstat"><div class="bl">NORMAL WHALE/HR</div><div class="bv" id="bl-whr">--</div></div>
+  <!-- DRIFT COMPASS -->
+  <div class="page" style="padding-bottom:0;">
+    <div class="card">
+      <div class="ct">DRIFT COMPASS <span class="badge" id="compass-badge">CALIBRATING</span></div>
+      <div id="compass-wrap">
+        <canvas id="compass-canvas" width="200" height="200"></canvas>
+        <div id="compass-reading" class="yellow">--</div>
+        <div id="compass-sub">Watching all four timeframes...</div>
+      </div>
+      <div id="tf-alignment">
+        <div class="tfa flat" id="tfa-1m"><div class="tfa-lbl">1 MIN</div><div class="tfa-arrow" id="arr-1m">→</div><div class="tfa-val" id="tfv-1m" style="color:var(--yellow)">--</div></div>
+        <div class="tfa flat" id="tfa-5m"><div class="tfa-lbl">5 MIN</div><div class="tfa-arrow" id="arr-5m">→</div><div class="tfa-val" id="tfv-5m" style="color:var(--yellow)">--</div></div>
+        <div class="tfa flat" id="tfa-15m"><div class="tfa-lbl">15 MIN</div><div class="tfa-arrow" id="arr-15m">→</div><div class="tfa-val" id="tfv-15m" style="color:var(--yellow)">--</div></div>
+        <div class="tfa flat" id="tfa-1h"><div class="tfa-lbl">1 HOUR</div><div class="tfa-arrow" id="arr-1h">→</div><div class="tfa-val" id="tfv-1h" style="color:var(--yellow)">--</div></div>
+      </div>
+      <div id="align-box">
+        <div id="align-main" class="yellow" style="font-family:'Orbitron',monospace;font-size:10px;font-weight:700;margin-bottom:3px;">AWAITING DATA</div>
+        <div id="align-sub" style="font-size:10px;color:var(--muted);line-height:1.5;">All four timeframes need data before alignment can be read.</div>
+      </div>
+      <div class="sw-block" style="margin-top:8px;">
+        <div class="sw-label">SO WHAT?</div>
+        <div class="sw-meaning" id="compass-meaning">When all four arrows point the same way, that's when moves tend to follow through.</div>
+        <div class="sw-action" id="compass-action">Watch for alignment before reading directional momentum.</div>
+      </div>
     </div>
   </div>
 
-  <!-- NARRATIVE TIMELINE -->
-  <div class="card" style="flex:1;">
-    <div class="ct">
-      NARRATIVE TIMELINE
-      <span class="badge" id="tl-count">0 EVENTS</span>
+  <!-- WHALE TRACKER -->
+  <div class="page" style="padding-bottom:0;">
+    <div class="card">
+      <div class="ct">WHALE TRACKER <span class="badge" id="whale-ct">0</span></div>
+      <div id="whale-list"><div style="color:var(--muted);font-size:10px;padding:6px;">Monitoring for large trades (100K+ XRP)...</div></div>
     </div>
-    <div id="stats-row">
-      <div class="stat-mini"><div class="sl">ANOMALIES</div><div class="sv wc" id="s-anom">0</div><div class="ss">detected</div></div>
-      <div class="stat-mini"><div class="sl">AVG MULT</div><div class="sv accent" id="s-mult">0x</div><div class="ss">vs baseline</div></div>
-      <div class="stat-mini"><div class="sl">SIGNAL STR</div><div class="sv" id="s-str">--</div><div class="ss">current</div></div>
+  </div>
+
+  <!-- ABSORPTION DETECTOR -->
+  <div class="page">
+    <div class="card">
+      <div class="ct">ABSORPTION DETECTOR</div>
+      <div class="abs-row">
+        <div class="abs-lbl"><span class="green">BUY ABSORPTION</span><span id="abs-bv" class="green">0%</span></div>
+        <div class="abs-track"><div class="abs-fill" id="abs-bf" style="background:var(--green);width:0%"></div></div>
+      </div>
+      <div class="abs-row">
+        <div class="abs-lbl"><span class="red">SELL ABSORPTION</span><span id="abs-sv" class="red">0%</span></div>
+        <div class="abs-track"><div class="abs-fill" id="abs-sf" style="background:var(--red);width:0%"></div></div>
+      </div>
+      <div id="abs-status" style="color:var(--muted);font-size:10px;">Watching for absorption patterns...</div>
+      <div class="sw-block" style="margin-top:8px;">
+        <div class="sw-label">SO WHAT?</div>
+        <div class="sw-meaning" id="abs-meaning">Price flat while one side dominates volume = a hidden hand absorbing the other side.</div>
+        <div class="sw-action" id="abs-action">Buy absorption = hidden buyer sitting there. Sell absorption = hidden seller capping moves.</div>
+      </div>
     </div>
-    <div id="timeline"><div style="color:var(--muted);font-size:10px;padding:8px;text-align:center;">Watching the market. First events will appear shortly...</div></div>
   </div>
 
 </div><!-- /col2 -->
 
-<!-- COL 3: ANOMALY ENGINE -->
+<!-- ══ COL 3: ANOMALY ENGINE + ALERT FEED + BASELINE ══ -->
 <div class="col">
 
-  <div class="card">
-    <div class="ct">ANOMALY ENGINE <span class="badge" id="anom-ct">0</span></div>
-
-    <div id="anomaly-status">
-      <div id="anom-icon">👁</div>
-      <div>
-        <div id="anom-state" class="muted">CALIBRATING BASELINE</div>
-        <div id="anom-sub">Needs ~60 trades to establish normal behaviour.</div>
+  <!-- ANOMALY ENGINE -->
+  <div class="page" style="padding-bottom:0;">
+    <div class="card">
+      <div class="ct">ANOMALY ENGINE <span class="badge" id="anom-ct">0</span></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:3px;margin-bottom:8px;border:1px solid var(--border2);">
+        <span id="anom-icon" style="font-size:18px;">📊</span>
+        <div>
+          <div id="anom-state" style="font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--muted);">CALIBRATING</div>
+          <div id="anom-sub" style="font-size:9px;color:var(--muted);margin-top:1px;">Building session baseline...</div>
+        </div>
       </div>
-    </div>
-
-    <div id="anom-list">
-      <div style="color:var(--muted);font-size:9px;padding:4px;">Monitoring for statistical anomalies...</div>
+      <div id="anom-list"><div style="color:var(--muted);font-size:9px;padding:4px;">Monitoring for statistical anomalies...</div></div>
+      <div class="sw-block" style="margin-top:8px;">
+        <div class="sw-label">SO WHAT?</div>
+        <div class="sw-meaning">Anomalies are trades that are statistically unusual vs the session average — not just large in absolute size. A 30K trade when average is 500 XRP tells you more than a 200K trade when average is 180K.</div>
+        <div class="sw-action">Watch for velocity bursts — 3+ anomalies within 90 seconds often precede price movement.</div>
+      </div>
     </div>
   </div>
 
-  <!-- ANOMALY EXPLANATION -->
-  <div class="card">
-    <div class="ct">HOW IT WORKS</div>
-    <div style="font-size:11px;color:var(--muted);line-height:1.7;">
-      <p style="margin-bottom:8px;">Unlike size-based alerts (which fire on any 100K+ trade), the anomaly engine compares each trade to the <em style="color:var(--text);">rolling session baseline</em>.</p>
-      <p style="margin-bottom:8px;">A <strong style="color:var(--accent);">5x trade</strong> when average size is 2,000 XRP matters more than a <strong style="color:var(--accent);">100K trade</strong> when average is 80,000 XRP.</p>
-      <p style="margin-bottom:8px;">It also detects <strong style="color:var(--whale);">velocity bursts</strong> — when multiple anomalous trades cluster together in under 90 seconds. This often precedes price movement.</p>
-      <p>The <strong style="color:var(--yellow);">Drift Compass</strong> updates when 3+ timeframes align in the same direction. That's the rare moment when momentum is genuinely stacking up.</p>
+  <!-- LIVE ALERT FEED -->
+  <div class="page" style="padding-bottom:0;">
+    <div class="card">
+      <div class="ct">LIVE ALERT FEED <span class="badge" id="af-ct">0</span></div>
+      <div id="alert-feed"><div style="color:var(--muted);font-size:10px;padding:6px;">Monitoring market activity...</div></div>
+    </div>
+  </div>
+
+  <!-- BASELINE -->
+  <div class="page">
+    <div class="card">
+      <div class="ct">SESSION BASELINE <span class="badge" id="bl-ct">0 TRADES</span></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:4px;line-height:1.5;">
+        The anomaly engine measures every trade against these session averages — not hardcoded thresholds.
+      </div>
+      <div class="bl-grid">
+        <div class="bl-item"><div class="bl-l">AVG SIZE</div><div class="bl-v" id="bl-avg">--</div></div>
+        <div class="bl-item"><div class="bl-l">AVG INTERVAL</div><div class="bl-v" id="bl-int">--</div></div>
+        <div class="bl-item"><div class="bl-l">WHALE/HR</div><div class="bl-v" id="bl-whr">--</div></div>
+      </div>
     </div>
   </div>
 
 </div><!-- /col3 -->
 
-</div><!-- /scroll -->
+</div><!-- /scroll-area -->
 </div><!-- /app -->
 
 <!-- EGG -->
@@ -407,53 +536,37 @@ body::after{
 // CONSTANTS
 // ═══════════════════════════════════════════════════
 const WHALE_T=100000,SHARK_T=25000,FISH_T=5000;
-const BASELINE_MIN=60; // trades needed to calibrate
-const ANOMALY_MULT=4;  // 4x average = anomaly
-const BURST_WIN=90000; // 90s burst window
-const BURST_MIN=3;     // 3 anomalies in burst window = event
+const BASELINE_MIN=60,ANOMALY_MULT=4;
+const BURST_WIN=90000,BURST_MIN=3;
 const RECONN=4000;
-const RENDER_THR=500; // DOM updates max every 500ms
-const CANVAS_THR=1200; // canvas redraws max every 1.2s
+const DOM_THR=400,CANVAS_THR=1200;
+const TF_MS={'1m':60000,'5m':300000,'15m':900000,'1h':3600000};
 
 // ═══════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════
 const S={
-  gbp:0.79,priceGbp:0,change24h:0,
-  // baseline
-  tradeCount:0,
-  sizeSum:0,
-  tradeTimes:[],   // timestamps for interval calc
+  gbp:0.79,priceGbp:0,prevGbp:0,
+  buyVol:0,sellVol:0,cumDelta:0,
+  tradeCount:0,sizeSum:0,tradeTimes:[],
   avgSize:0,avgInterval:5000,
-  // rolling window for delta per TF
+  priceHist:[],   // for volatility
   tfData:{
-    '1m':{buy:0,sell:0,start:Date.now(),snaps:[]},
-    '5m':{buy:0,sell:0,start:Date.now(),snaps:[]},
-    '15m':{buy:0,sell:0,start:Date.now(),snaps:[]},
-    '1h':{buy:0,sell:0,start:Date.now(),snaps:[]},
+    '1m':{buy:0,sell:0,start:Date.now()},
+    '5m':{buy:0,sell:0,start:Date.now()},
+    '15m':{buy:0,sell:0,start:Date.now()},
+    '1h':{buy:0,sell:0,start:Date.now()},
   },
-  // absorption tracking
-  absWin:[],       // {price,qty,isBuy,time}
-  absWindowMs:30000,
-  absThreshold:0.003, // price range for "flat" = 0.3%
-  // anomalies
-  anomalies:[],
-  anomalyCount:0,
-  anomalyTimes:[],  // for burst detection
-  burstCount:0,
-  // timeline
-  timeline:[],
-  tlCount:0,
-  // whales per hour estimate
-  whalesThisSession:0,
+  absWin:[],absWindowMs:30000,
+  anomalies:[],anomalyCount:0,anomalyTimes:[],
+  whales:[],whaleCount:0,
+  alertFeed:[],
   sessionStart:Date.now(),
   soundOn:false,
-  wsAlive:false,
-  // compass
-  compassAngle:0,compassTarget:0,
-  compassAnim:null,
+  lastDrawnAngle:0,lastDrawnAligned:false,
+  prevAlignState:'',
+  prevMoodName:'',
 };
-const TF_MS={'1m':60000,'5m':300000,'15m':900000,'1h':3600000};
 
 // ═══════════════════════════════════════════════════
 // AUDIO
@@ -461,13 +574,20 @@ const TF_MS={'1m':60000,'5m':300000,'15m':900000,'1h':3600000};
 let actx=null;
 function ga(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx;}
 function beep(f,d,v=0.1,t='sine'){try{const a=ga(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch{}}
-function playAnomaly(){if(S.soundOn){beep(660,.08,.12);setTimeout(()=>beep(880,.12,.1),60);}}
-function playBurst(){if(S.soundOn){[0,80,160,240].forEach(d=>setTimeout(()=>beep(550,.06,.1),d));}}
-function playAlign(){if(S.soundOn){[440,550,660,770].forEach((f,i)=>setTimeout(()=>beep(f,.1,.12),i*70));}}
-window.toggleSound=function(){S.soundOn=!S.soundOn;const b=document.getElementById('soundbtn');b.textContent=S.soundOn?'🔔 ON':'🔔';b.className=S.soundOn?'topbtn active':'topbtn';if(S.soundOn)beep(440,.1);};
+function playWhale(buy){if(S.soundOn){if(buy){beep(440,.1,.12);setTimeout(()=>beep(660,.15,.1),80);}else{beep(330,.1,.12,'sawtooth');setTimeout(()=>beep(220,.15,.1,'sawtooth'),80);}}}
+function playAnom(){if(S.soundOn){beep(660,.07,.1);setTimeout(()=>beep(880,.1,.09),55);}}
+function playBurst(){if(S.soundOn){[0,75,150,225].forEach(d=>setTimeout(()=>beep(550,.05,.09),d));}}
+function playAlign(){if(S.soundOn){[440,550,660,770].forEach((f,i)=>setTimeout(()=>beep(f,.09,.1),i*65));}}
+window.toggleSound=function(){
+  S.soundOn=!S.soundOn;
+  const b=document.getElementById('soundbtn');
+  b.textContent=S.soundOn?'🔔 ON':'🔔';
+  b.className=S.soundOn?'tbtn sound-on':'tbtn';
+  if(S.soundOn)beep(440,.08);
+};
 
 // ═══════════════════════════════════════════════════
-// GBP RATE
+// GBP
 // ═══════════════════════════════════════════════════
 async function fetchGbp(){
   try{const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=GBP');const j=await r.json();S.gbp=j.rates.GBP;}
@@ -479,540 +599,628 @@ async function fetchGbp(){
 // EXCHANGE CONNECTIONS
 // ═══════════════════════════════════════════════════
 function setConn(alive){
-  S.wsAlive=alive;
   document.getElementById('dot').className='dot '+(alive?'live':'warn');
-  document.getElementById('ctxt').textContent=alive?'LIVE · BINANCE + 4 EXCHANGES':'CONNECTING...';
+  document.getElementById('ctxt').textContent=alive?'LIVE · 5 EXCHANGES':'CONNECTING...';
 }
-
 function connectBinance(){
   const ws=new WebSocket('wss://stream.binance.com:9443/ws/xrpusdt@aggTrade');
   ws.onopen=()=>setConn(true);
   ws.onmessage=e=>{try{const d=JSON.parse(e.data);onTrade('Binance',parseFloat(d.p)*S.gbp,parseFloat(d.q),!d.m);}catch{}};
-  ws.onerror=()=>{};
-  ws.onclose=()=>{setConn(false);setTimeout(connectBinance,RECONN);};
+  ws.onerror=()=>{};ws.onclose=()=>{setConn(false);setTimeout(connectBinance,RECONN);};
 }
-function connectKraken(){
-  try{const ws=new WebSocket('wss://ws.kraken.com');ws.onopen=()=>ws.send(JSON.stringify({event:'subscribe',pair:['XRP/USD'],subscription:{name:'trade'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(Array.isArray(d)&&d[2]==='trade')d[1].forEach(t=>onTrade('Kraken',parseFloat(t[0])*S.gbp,parseFloat(t[1]),t[3]==='b'));}catch{}};ws.onclose=()=>setTimeout(connectKraken,RECONN);}catch{setTimeout(connectKraken,RECONN);}
-}
-function connectCoinbase(){
-  try{const ws=new WebSocket('wss://advanced-trade-ws.coinbase.com');ws.onopen=()=>ws.send(JSON.stringify({type:'subscribe',product_ids:['XRP-USD'],channel:'market_trades'}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.channel==='market_trades'&&d.events)d.events.forEach(ev=>{if(ev.trades)ev.trades.forEach(t=>onTrade('Coinbase',parseFloat(t.price)*S.gbp,parseFloat(t.size),t.side==='BUY'));});}catch{}};ws.onclose=()=>setTimeout(connectCoinbase,RECONN);}catch{setTimeout(connectCoinbase,RECONN);}
-}
-function connectBitstamp(){
-  try{const ws=new WebSocket('wss://ws.bitstamp.net');ws.onopen=()=>ws.send(JSON.stringify({event:'bts:subscribe',data:{channel:'live_trades_xrpusd'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.event==='trade')onTrade('Bitstamp',parseFloat(d.data.price)*S.gbp,parseFloat(d.data.amount),parseInt(d.data.type)===0);}catch{}};ws.onclose=()=>setTimeout(connectBitstamp,RECONN);}catch{setTimeout(connectBitstamp,RECONN);}
-}
-function connectOKX(){
-  try{const ws=new WebSocket('wss://ws.okx.com:8443/ws/v5/public');ws.onopen=()=>ws.send(JSON.stringify({op:'subscribe',args:[{channel:'trades',instId:'XRP-USDT'}]}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.arg?.channel==='trades'&&Array.isArray(d.data))d.data.forEach(t=>onTrade('OKX',parseFloat(t.px)*S.gbp,parseFloat(t.sz),t.side==='buy'));}catch{}};ws.onclose=()=>setTimeout(connectOKX,RECONN);}catch{setTimeout(connectOKX,RECONN);}
-}
+function connectKraken(){try{const ws=new WebSocket('wss://ws.kraken.com');ws.onopen=()=>ws.send(JSON.stringify({event:'subscribe',pair:['XRP/USD'],subscription:{name:'trade'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(Array.isArray(d)&&d[2]==='trade')d[1].forEach(t=>onTrade('Kraken',parseFloat(t[0])*S.gbp,parseFloat(t[1]),t[3]==='b'));}catch{}};ws.onclose=()=>setTimeout(connectKraken,RECONN);}catch{setTimeout(connectKraken,RECONN);}}
+function connectCoinbase(){try{const ws=new WebSocket('wss://advanced-trade-ws.coinbase.com');ws.onopen=()=>ws.send(JSON.stringify({type:'subscribe',product_ids:['XRP-USD'],channel:'market_trades'}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.channel==='market_trades'&&d.events)d.events.forEach(ev=>{if(ev.trades)ev.trades.forEach(t=>onTrade('Coinbase',parseFloat(t.price)*S.gbp,parseFloat(t.size),t.side==='BUY'));});}catch{}};ws.onclose=()=>setTimeout(connectCoinbase,RECONN);}catch{setTimeout(connectCoinbase,RECONN);}}
+function connectBitstamp(){try{const ws=new WebSocket('wss://ws.bitstamp.net');ws.onopen=()=>ws.send(JSON.stringify({event:'bts:subscribe',data:{channel:'live_trades_xrpusd'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.event==='trade')onTrade('Bitstamp',parseFloat(d.data.price)*S.gbp,parseFloat(d.data.amount),parseInt(d.data.type)===0);}catch{}};ws.onclose=()=>setTimeout(connectBitstamp,RECONN);}catch{setTimeout(connectBitstamp,RECONN);}}
+function connectOKX(){try{const ws=new WebSocket('wss://ws.okx.com:8443/ws/v5/public');ws.onopen=()=>ws.send(JSON.stringify({op:'subscribe',args:[{channel:'trades',instId:'XRP-USDT'}]}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.arg?.channel==='trades'&&Array.isArray(d.data))d.data.forEach(t=>onTrade('OKX',parseFloat(t.px)*S.gbp,parseFloat(t.sz),t.side==='buy'));}catch{}};ws.onclose=()=>setTimeout(connectOKX,RECONN);}catch{setTimeout(connectOKX,RECONN);}}
 
 // ═══════════════════════════════════════════════════
 // CORE TRADE HANDLER
 // ═══════════════════════════════════════════════════
-let lastRender=0,lastCanvas=0;
+let lastDOM=0,lastCanvas=0;
 function onTrade(exchange,price,qty,isBuy){
   if(!price||!qty||isNaN(price)||isNaN(qty))return;
   S.priceGbp=price;
   const now=Date.now(),ts=new Date().toTimeString().slice(0,8);
 
-  // Baseline tracking
-  S.tradeCount++;
-  S.sizeSum+=qty;
-  S.tradeTimes.push(now);
-  if(S.tradeTimes.length>500)S.tradeTimes.shift();
-  if(S.tradeTimes.length>1){
-    const intervals=[];
-    for(let i=1;i<Math.min(S.tradeTimes.length,50);i++)intervals.push(S.tradeTimes[S.tradeTimes.length-i]-S.tradeTimes[S.tradeTimes.length-i-1]);
-    S.avgInterval=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+  // Baseline
+  S.tradeCount++;S.sizeSum+=qty;
+  S.tradeTimes.push(now);if(S.tradeTimes.length>400)S.tradeTimes.shift();
+  if(S.tradeTimes.length>2){
+    const recent=S.tradeTimes.slice(-50);
+    const ints=[];for(let i=1;i<recent.length;i++)ints.push(recent[i]-recent[i-1]);
+    S.avgInterval=ints.reduce((a,b)=>a+b,0)/ints.length;
   }
   S.avgSize=S.sizeSum/S.tradeCount;
+
+  // Volumes
+  if(isBuy){S.buyVol+=qty;S.cumDelta+=qty;}else{S.sellVol+=qty;S.cumDelta-=qty;}
+
+  // Price history (for volatility)
+  S.priceHist.push({price,time:now});
+  if(S.priceHist.length>200)S.priceHist.shift();
 
   // TF delta
   Object.entries(TF_MS).forEach(([tf,ms])=>{
     const d=S.tfData[tf];
-    if(now-d.start>ms){
-      // snapshot and reset
-      d.snaps.push({buy:d.buy,sell:d.sell,ts:now});
-      if(d.snaps.length>20)d.snaps.shift();
-      d.buy=0;d.sell=0;d.start=now;
-    }
+    if(now-d.start>ms){d.buy=0;d.sell=0;d.start=now;}
     if(isBuy)d.buy+=qty;else d.sell+=qty;
   });
-
-  // Whales
-  if(qty>=WHALE_T)S.whalesThisSession++;
 
   // Absorption window
   S.absWin.push({price,qty,isBuy,time:now});
   S.absWin=S.absWin.filter(t=>now-t.time<S.absWindowMs);
 
-  // Anomaly detection (needs calibration)
-  if(S.tradeCount>=BASELINE_MIN){
-    const mult=qty/S.avgSize;
-    if(mult>=ANOMALY_MULT){
-      processAnomaly(exchange,price,qty,isBuy,mult,ts,now);
-    }
+  // Whale tracking
+  if(qty>=WHALE_T){
+    S.whaleCount++;
+    const tier=qty>=1000000?'mega':qty>=500000?'large':'standard';
+    S.whales.unshift({ts,qty,isBuy,price,exchange,tier,elapsed:0,time:now});
+    if(S.whales.length>15)S.whales.pop();
+    playWhale(isBuy);
+    const meaning=isBuy?
+      (qty>=1000000?'Extremely large buy. Could indicate institutional accumulation.':`Large buy order. Significant buying interest on ${exchange}.`):
+      (qty>=1000000?'Extremely large sell. Possible distribution or stop-triggered flush.':`Large sell order. Notable selling pressure on ${exchange}.`);
+    pushAlert(isBuy?'buy':'sell',
+      `${tier==='mega'?'🐋🐋':'🐋'} ${isBuy?'Large Buy':'Large Sell'} Detected`,
+      `${fmtX(qty)} XRP on ${exchange} at £${fmtN(price,4)}`,
+      meaning,
+      qty>=500000?'high':'med');
+    renderWhaleList();
   }
 
-  // Throttled render - DOM and canvas on separate cycles
-  const now2=Date.now();
-  if(now2-lastRender>RENDER_THR){
-    lastRender=now2;
-    renderBaseline();
-    renderTimeline();
-    renderAnomalies();
-    computeAbsorption();
+  // Anomaly detection
+  if(S.tradeCount>=BASELINE_MIN){
+    const mult=qty/S.avgSize;
+    if(mult>=ANOMALY_MULT)processAnomaly(exchange,price,qty,isBuy,mult,ts,now);
   }
-  if(now2-lastCanvas>CANVAS_THR){
-    lastCanvas=now2;
-    computeCompass();
-  }
-  document.getElementById('hp').textContent=S.priceGbp?'£'+fmtN(S.priceGbp,4):'£-.----';
+
+  // Throttle renders
+  if(now-lastDOM>DOM_THR){lastDOM=now;renderDOM();}
+  if(now-lastCanvas>CANVAS_THR){lastCanvas=now;renderCanvas();}
+  document.getElementById('hp').textContent='£'+fmtN(S.priceGbp,4);
 }
 
 // ═══════════════════════════════════════════════════
 // ANOMALY PROCESSING
 // ═══════════════════════════════════════════════════
+let anomRendered=0;
 function processAnomaly(exchange,price,qty,isBuy,mult,ts,nowMs){
   S.anomalyCount++;
   S.anomalyTimes.push({time:nowMs,isBuy,qty,exchange});
   S.anomalyTimes=S.anomalyTimes.filter(a=>nowMs-a.time<BURST_WIN);
-
-  // Burst detection
   const isBurst=S.anomalyTimes.length>=BURST_MIN;
-  const burstBuys=S.anomalyTimes.filter(a=>a.isBuy).length;
-  const burstSells=S.anomalyTimes.length-burstBuys;
-  const burstDir=burstBuys>burstSells?'buy':burstSells>burstBuys?'sell':'neutral';
-
-  // Build narrative
   const multStr=mult.toFixed(1)+'x';
-  let title,body,type,tags=[];
+  let title,body,type;
   if(isBurst&&S.anomalyTimes.length===BURST_MIN){
-    // First burst trigger
-    title=isBuy?`Burst of Anomalous ${burstDir==='buy'?'Buying':'Selling'} Detected`:`Velocity Burst — ${S.anomalyTimes.length} Anomalous Prints`;
-    body=`${S.anomalyTimes.length} unusually large trades hit within ${Math.round(BURST_WIN/1000)}s. `+
-         `${burstBuys>0?burstBuys+' buy':''} ${burstSells>0?burstSells+' sell':''} prints, each averaging ${fmtN(mult,1)}x normal size. `+
-         `${burstDir==='buy'?'Pattern is consistent with an institution entering a position quietly.':'Pattern may indicate coordinated selling or stop-hunting.'}`;
-    type=burstDir;
-    tags=['velocity burst','multi-exchange','statistical'];
-    pushTimeline(title,body,burstDir==='buy'?'buy':burstDir==='sell'?'sell':'anomaly',tags,ts);
+    const bb=S.anomalyTimes.filter(a=>a.isBuy).length,bs=S.anomalyTimes.length-bb;
+    const bd=bb>bs?'buy':bs>bb?'sell':'neutral';
+    title=`🔥 Velocity Burst — ${S.anomalyTimes.length} Anomalous ${bd==='buy'?'Buys':'Sells'}`;
+    body=`${S.anomalyTimes.length} unusually large prints within 90s. Each averaging ${multStr} normal size. ${bd==='buy'?'Pattern consistent with institution entering quietly.':'May indicate coordinated selling or stop-hunt.'}`;
+    type=bd;
     playBurst();
-  } else if(!isBurst){
-    // Single anomaly
-    title=`${isBuy?'Anomalous Buy':'Anomalous Sell'} — ${multStr} Normal Size`;
-    body=`A ${fmtX(qty)} XRP ${isBuy?'buy':'sell'} hit ${exchange} at £${fmtN(price,4)}. `+
-         `This is ${multStr} the current session average of ${fmtX(S.avgSize)} XRP. `+
-         `${qty>=WHALE_T?'Whale-sized order.':qty>=SHARK_T?'Large institutional-scale trade.':'Significant relative to session baseline.'}`;
+    pushAlert(bd,'Velocity Burst Detected',`${S.anomalyTimes.length} anomalous prints in 90s on ${exchange}`,`${bd==='buy'?'Possible institution working a buy order quietly.':'Possible coordinated sell — watch for price impact.'}`,'high');
+  }else if(!isBurst){
+    title=`${isBuy?'Anomalous Buy':'Anomalous Sell'} — ${multStr} Normal`;
+    body=`${fmtX(qty)} XRP ${isBuy?'bought':'sold'} on ${exchange}. Session average: ${fmtX(S.avgSize)} XRP.`;
     type=isBuy?'buy':'sell';
-    tags=[multStr+' baseline','single print',exchange.toLowerCase()];
-    pushTimeline(title,body,type,tags,ts);
-    playAnomaly();
+    playAnom();
+  }
+  if(title){
+    S.anomalies.unshift({title,body,type,mult,exchange,ts,isBurst});
+    if(S.anomalies.length>20)S.anomalies.pop();
+    renderAnomalyList();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// ALERT FEED
+// ═══════════════════════════════════════════════════
+let afRendered=0;
+function pushAlert(type,msg,detail='',meaning='',impact='low'){
+  const ts=new Date().toTimeString().slice(0,5);
+  S.alertFeed.unshift({type,msg,detail,meaning,impact,ts});
+  if(S.alertFeed.length>40)S.alertFeed.pop();
+  renderAlertFeed();
+}
+
+// ═══════════════════════════════════════════════════
+// COMPUTE — CENTRAL
+// ═══════════════════════════════════════════════════
+function compute(){
+  const tot=S.buyVol+S.sellVol||1;
+  const bp=S.buyVol/tot;
+
+  // Volatility
+  let volatility=0;
+  if(S.priceHist.length>10){
+    const prices=S.priceHist.slice(-50).map(p=>p.price);
+    const mean=prices.reduce((a,b)=>a+b,0)/prices.length;
+    const variance=prices.reduce((s,p)=>s+(p-mean)**2,0)/prices.length;
+    volatility=Math.sqrt(variance)/mean*100; // % std dev
   }
 
-  // Push to anomaly list
-  S.anomalies.unshift({title,body:body||'',type:type||'neutral',mult,exchange,ts,time:ts,tags,isBurst});
-  if(S.anomalies.length>30)S.anomalies.pop();
+  // Volume rate (trades/min)
+  const recentTrades=S.tradeTimes.filter(t=>Date.now()-t<60000).length;
 
-  renderAnomalies();
-}
-
-// ═══════════════════════════════════════════════════
-// TIMELINE
-// ═══════════════════════════════════════════════════
-function pushTimeline(title,body,type,tags,time){
-  S.timeline.unshift({title,body,type,tags,time,ts:Date.now()});
-  if(S.timeline.length>50)S.timeline.pop();
-  S.tlCount++;
-}
-
-// ═══════════════════════════════════════════════════
-// COMPASS COMPUTE
-// ═══════════════════════════════════════════════════
-let prevAlignState='';
-function computeCompass(){
-  const scores={};
-  let total=0,count=0;
-  // For each TF, calculate current delta momentum
-  const now=Date.now();
-  Object.entries(TF_MS).forEach(([tf,ms])=>{
-    const d=S.tfData[tf];
-    const tfTot=d.buy+d.sell;
-    if(tfTot<100){scores[tf]=0;return;}
-    const bp=(d.buy/tfTot-0.5)*2; // -1 to +1
-    scores[tf]=bp;
-    total+=bp;count++;
+  // TF scores
+  const tfScores={};
+  Object.entries(TF_MS).forEach(([tf])=>{
+    const d=S.tfData[tf],t=d.buy+d.sell;
+    tfScores[tf]=t>50?(d.buy/t-0.5)*2:0;
   });
-  const avg=count>0?total/count:0;
+  const tfVals=Object.values(tfScores);
+  const avgTF=tfVals.reduce((a,b)=>a+b,0)/tfVals.length;
+  const bullTFs=tfVals.filter(v=>v>0.1).length;
+  const bearTFs=tfVals.filter(v=>v<-0.1).length;
 
-  // Alignment
-  const allBull=Object.values(scores).filter(v=>v>0.1).length;
-  const allBear=Object.values(scores).filter(v=>v<-0.1).length;
-  const aligned=allBull>=3||allBear>=3;
-  const strongAligned=allBull===4||allBear===4;
+  // Jon Score
+  let score=50;
+  if(S.cumDelta>50000)score+=12;else if(S.cumDelta<-50000)score-=12;
+  if(bp>0.58)score+=10;else if(bp<0.42)score-=10;
+  score+=avgTF*12;
+  const netWhale=S.whales.slice(0,5).reduce((s,w)=>s+(w.isBuy?w.qty:-w.qty),0);
+  if(netWhale>200000)score+=8;else if(netWhale<-200000)score-=8;
+  score=Math.max(0,Math.min(100,Math.round(score)));
 
-  // Compass needle target: -90 = full sell, 0 = neutral, +90 = full buy
-  const targetAngle=avg*85; // map -1..+1 to -85..+85 degrees
+  // Signal confidence
+  let conf=Math.abs(score-50)*1.8+10;
+  if(bullTFs>=3||bearTFs>=3)conf+=15;
+  if(S.anomalyCount>0)conf+=5;
+  conf=Math.min(95,Math.round(conf));
 
-  // TF arrows
-  const tfIds={'1m':'1m','5m':'5m','15m':'15m','1h':'1h'};
-  Object.entries(scores).forEach(([tf,sc])=>{
+  // Momentum (comparing current 1m to 5m)
+  const mom1=tfScores['1m']||0,mom5=tfScores['5m']||0;
+  const momDir=mom1>mom5+0.1?'Rising':mom1<mom5-0.1?'Fading':'Stable';
+
+  // Mood computation
+  const volScore=Math.min(100,volatility*200);
+  const volRateScore=Math.min(100,recentTrades*2);
+  const bpScore=Math.abs(bp-0.5)*200;
+  const momScore=Math.abs(avgTF)*100;
+  const moodScore=(volScore*0.25+volRateScore*0.2+bpScore*0.3+momScore*0.25);
+  let mood,moodIcon,moodDesc,moodMeaning,moodAction,moodBadge;
+  if(moodScore<10){mood='Sleeping';moodIcon='😴';moodDesc='Very low activity. Market is quiet.';moodMeaning='Nothing significant happening right now. This is a waiting period.';moodAction='No action needed. Wait for volume to pick up.';moodBadge='QUIET';}
+  else if(moodScore<25){mood='Calm';moodIcon='🙂';moodDesc='Normal activity. No strong signals.';moodMeaning='Market is ticking along normally. No extreme pressure either way.';moodAction='Monitor passively. No rush.';moodBadge='CALM';}
+  else if(moodScore<45){mood='Nervous';moodIcon='⚠️';moodDesc='Increasing activity. Pressure building.';moodMeaning='Volume and volatility are picking up. Something may be developing.';moodAction='Pay closer attention. Watch for delta and large trades to confirm direction.';moodBadge='ALERT';}
+  else if(moodScore<65){mood='Heating Up';moodIcon='🔥';moodDesc='High activity. Significant pressure detected.';moodMeaning='The market is active and one side is gaining control. Moves can happen fast.';moodAction='Watch closely. Confirm direction with delta before acting.';moodBadge='ACTIVE';}
+  else if(moodScore<82){mood='Euphoric';moodIcon='🚀';moodDesc='Extreme activity. Momentum is intense.';moodMeaning='Market is running hard. FOMO or panic conditions. Prices can spike or drop quickly.';moodAction='Caution. Extreme conditions can reverse suddenly. Do not chase.';moodBadge='INTENSE';}
+  else{mood='Panic';moodIcon='☠️';moodDesc='Extreme volatility and volume. Panic conditions.';moodMeaning='Abnormal market behaviour. Either a crash or a breakout squeeze. High risk.';moodAction='Extreme caution. Wait for conditions to stabilise before reading signals.';moodBadge='EXTREME';}
+
+  // Verdict
+  let vReading,vIcon,vConf,vRisk,vMove;
+  if(score>=72){vReading='Strong Bullish';vIcon='🟢';vConf=conf;vRisk='Medium';vMove='Buyers are in control. Watch for any pullback to find better entries. Don\'t chase spikes.';}
+  else if(score>=60){vReading='Bullish Lean';vIcon='🟢';vConf=conf;vRisk='Medium';vMove='Watch for confirmation before entering. Delta and whale buys should align.';}
+  else if(score>=52){vReading='Mild Bullish';vIcon='🟢';vConf=conf;vRisk='Medium-Low';vMove='Early signs of buyers. Not strong enough to act on — wait for clearer signal.';}
+  else if(score<=28){vReading='Strong Bearish';vIcon='🔴';vConf=conf;vRisk='High';vMove='Sellers in control. Watch for support levels and reversal signals before any entry.';}
+  else if(score<=40){vReading='Bearish Lean';vIcon='🔴';vConf=conf;vRisk='Medium-High';vMove='Sellers have edge. Avoid buying into this — wait for delta to turn positive.';}
+  else if(score<=48){vReading='Mild Bearish';vIcon='🔴';vConf=conf;vRisk='Medium';vMove='Slight seller advantage. Patience — watch for pressure to shift.';}
+  else{vReading='Balanced';vIcon='🟡';vConf=conf;vRisk='Low-Medium';vMove='Neither side in control. Market is deciding direction. Watch for volume to break the standoff.';}
+
+  // Confidence label
+  let confLabel;
+  if(score>=65&&conf>=70)confLabel='Strong Buy';
+  else if(score>=55&&conf>=50)confLabel='Weak Buy';
+  else if(score<=35&&conf>=70)confLabel='Strong Sell';
+  else if(score<=45&&conf>=50)confLabel='Weak Sell';
+  else confLabel='Neutral';
+
+  let confMeaning,confAction;
+  if(confLabel==='Strong Buy'){confMeaning='Multiple signals align bullishly with high confidence. The market appears to favour buyers right now.';confAction='Watch for a pullback entry. Strong signal but avoid chasing.';}
+  else if(confLabel==='Weak Buy'){confMeaning='Slight buy edge but not enough signals to be confident. Could reverse.';confAction='Wait for confirmation — more signals need to agree before this counts.';}
+  else if(confLabel==='Strong Sell'){confMeaning='Multiple signals align bearishly with high confidence. Sellers appear in control.';confAction='Watch for support. High conviction sell signal — don\'t fight it.';}
+  else if(confLabel==='Weak Sell'){confMeaning='Slight sell edge but signal is weak. Not enough to call direction confidently.';confAction='Monitor — wait for delta or whale activity to confirm.';}
+  else{confMeaning='Signals are mixed or neutral. Neither buyers nor sellers have a clear edge.';confAction='Wait. No clear directional signal. Watch the order book and delta for the next move.';}
+
+  // Battlefield sentence
+  const bpPct=(bp*100).toFixed(0);
+  let bfSentence;
+  if(score>=65&&momDir==='Rising')bfSentence=`Bulls are pushing hard with momentum increasing. ${bpPct}% buy pressure and delta rising.`;
+  else if(score>=65)bfSentence=`Bulls have the advantage but momentum is ${momDir.toLowerCase()}. Watch for follow-through.`;
+  else if(score<=35&&momDir==='Rising')bfSentence=`Bears are absorbing weak buyers. Selling momentum is building.`;
+  else if(score<=35)bfSentence=`Sellers hold the edge but momentum is ${momDir.toLowerCase()}. Could be a slow bleed.`;
+  else bfSentence=`Neither side has clear control. ${bpPct}% buy pressure. Market is waiting for a catalyst.`;
+
+  let bfMeaning,bfAction;
+  if(score>=60){bfMeaning='Buyers currently have the upper hand on the battlefield. Volume and pressure favour continuation.';bfAction='Watch for resistance levels. If price stalls at resistance, it could signal exhaustion.';}
+  else if(score<=40){bfMeaning='Sellers currently control the battlefield. Buyers are being absorbed without price moving up.';bfAction='Watch for support levels. If support holds under sell pressure, a reversal could be forming.';}
+  else{bfMeaning='The battlefield is balanced. Both sides trading blows — no clear winner yet.';bfAction='Watch for which side breaks first. A volume surge in either direction will decide it.';}
+
+  // Compass meaning/action
+  let compassMeaning,compassAction;
+  if(bullTFs===4){compassMeaning='All four timeframes aligned bullish — rare. This is when momentum tends to sustain.';compassAction='Highest confidence setup. Watch for volume to confirm before acting.';playAlign();}
+  else if(bearTFs===4){compassMeaning='All four timeframes aligned bearish. Seller momentum spans short and long term.';compassAction='High conviction bearish signal. Watch for support bounce before any entry.';}
+  else if(bullTFs>=3){compassMeaning='Three timeframes agree buyers are in control. Short and medium term align.';compassAction='Watch the 1H timeframe — if it turns bullish too, that\'s the full confirmation.';}
+  else if(bearTFs>=3){compassMeaning='Three timeframes lean bearish. Seller pressure building across multiple windows.';compassAction='Wait for reversal signal before entering. Don\'t buy into this.';}
+  else{compassMeaning='Timeframes are split — short and long term disagree.';compassAction='No clear directional edge. This is a wait-and-see moment.';}
+
+  return{score,bp,conf,confLabel,confMeaning,confAction,
+    mood,moodIcon,moodDesc,moodMeaning,moodAction,moodBadge,
+    moodScore,volatility,volScore,volRateScore,bpScore,momScore,
+    momDir,vReading,vIcon,vConf,vRisk,vMove,
+    bfSentence,bfMeaning,bfAction,compassMeaning,compassAction,
+    avgTF,bullTFs,bearTFs,tfScores,netWhale};
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER — DOM
+// ═══════════════════════════════════════════════════
+let lastC=null;
+function renderDOM(){
+  const C=compute();lastC=C;
+
+  // Verdict
+  const vcard=document.getElementById('verdict');
+  const vCol=C.score>=55?'rgba(0,232,122,.12)':C.score<=45?'rgba(255,51,85,.12)':'rgba(255,201,64,.1)';
+  const vBorder=C.score>=55?'rgba(0,232,122,.35)':C.score<=45?'rgba(255,51,85,.35)':'rgba(255,201,64,.3)';
+  vcard.style.cssText=`padding:14px;border-radius:var(--r);margin-bottom:6px;border:2px solid ${vBorder};position:relative;overflow:hidden;background:${vCol};transition:all .5s;`;
+  document.getElementById('v-icon').textContent=C.vIcon;
+  const vr=document.getElementById('v-reading');vr.textContent=C.vReading;
+  vr.style.color=C.score>=55?'var(--green)':C.score<=45?'var(--red)':'var(--yellow)';
+  document.getElementById('v-conf').textContent=`Confidence: ${C.vConf}% · Risk: ${C.vRisk}`;
+  document.getElementById('v-time').textContent=new Date().toTimeString().slice(0,8);
+  const sc=document.getElementById('vg-score');sc.textContent=C.score;
+  sc.style.color=C.score>=55?'var(--green)':C.score<=45?'var(--red)':'var(--yellow)';
+  const st=document.getElementById('vg-str');
+  st.textContent=C.confLabel;st.style.color=C.score>=60?'var(--green)':C.score<=40?'var(--red)':'var(--yellow)';
+  const mm=document.getElementById('vg-mom');
+  mm.textContent=C.momDir;mm.style.color=C.momDir==='Rising'?'var(--green)':C.momDir==='Fading'?'var(--red)':'var(--yellow)';
+  document.getElementById('v-move').textContent=C.vMove;
+
+  // Confidence meter
+  const cpct=document.getElementById('conf-pct');cpct.textContent=C.conf+'%';
+  const cf=document.getElementById('conf-fill');
+  const cfCol=C.score>=55?'var(--green)':C.score<=45?'var(--red)':'var(--yellow)';
+  cf.style.width=C.conf+'%';cf.style.background=cfCol;
+  cpct.style.color=cfCol;
+  // Blocks
+  const blocks=10,filled=Math.round(C.conf/10);
+  document.getElementById('conf-blocks').innerHTML=Array.from({length:blocks},(_,i)=>`<div class="conf-block" style="background:${i<filled?cfCol:'rgba(255,255,255,.06)'}"></div>`).join('');
+  const cr=document.getElementById('conf-reading');cr.textContent=C.confLabel;cr.style.color=cfCol;
+  document.getElementById('conf-meaning').textContent=C.confMeaning;
+  document.getElementById('conf-action').textContent=C.confAction;
+
+  // Mood
+  if(C.mood!==S.prevMoodName){
+    S.prevMoodName=C.mood;
+    document.getElementById('mood-icon').textContent=C.moodIcon;
+    const mn=document.getElementById('mood-name');mn.textContent=C.mood.toUpperCase();
+    const mCol=C.moodScore<25?'var(--accent)':C.moodScore<45?'var(--yellow)':C.moodScore<65?'var(--whale)':C.moodScore<82?'var(--red)':'var(--red)';
+    mn.style.color=mCol;
+    document.getElementById('mood-desc').textContent=C.moodDesc;
+    document.getElementById('mood-badge').textContent=C.moodBadge;
+    document.getElementById('mood-meaning').textContent=C.moodMeaning;
+    document.getElementById('mood-action').textContent=C.moodAction;
+  }
+  // Mood bars (update values only, no DOM rebuild)
+  setBar('mb-vol',C.volScore,'var(--accent)',C.volatility.toFixed(2)+'%','mb-vol-v');
+  setBar('mb-volume',C.volRateScore,'var(--purple)',fmtX(S.tradeCount),'mb-volume-v');
+  setBar('mb-bp',C.bpScore,'var(--green)',(C.bp*100).toFixed(0)+'%','mb-bp-v');
+  setBar('mb-mom',C.momScore,'var(--yellow)',C.momDir,'mb-mom-v');
+
+  // Battlefield
+  const bpPct=(C.bp*100).toFixed(0);
+  const bfCol=C.score>=55?'var(--green)':C.score<=45?'var(--red)':'var(--yellow)';
+  setBarSimple('bf-trend',C.score,bfCol,'bf-trend-v',bpPct+'%');
+  setBarSimple('bf-press',(C.bp*100),C.score>=55?'var(--green)':'var(--red)','bf-press-v',bpPct+'%');
+  setBarSimple('bf-vol',Math.min(100,S.tradeCount/2),'var(--accent)','bf-vol-v',fmtX(S.tradeCount));
+  setBarSimple('bf-volt',Math.min(100,C.volatility*300),'var(--yellow)','bf-volt-v',C.volatility.toFixed(3)+'%');
+  document.getElementById('bf-sentence').textContent=C.bfSentence;
+  document.getElementById('bf-meaning').textContent=C.bfMeaning;
+  document.getElementById('bf-action').textContent=C.bfAction;
+
+  // Compass TF arrows
+  Object.entries(C.tfScores).forEach(([tf,sc])=>{
     const el=document.getElementById('tfa-'+tf);
     const arrow=document.getElementById('arr-'+tf);
-    const val=document.getElementById('tfa-val-'+tf);
-    const sub=document.getElementById('tfa-sub-'+tf);
+    const val=document.getElementById('tfv-'+tf);
     if(!el)return;
-    const bp=((sc+1)/2*100).toFixed(0);
+    const bp2=((sc+1)/2*100).toFixed(0);
     if(sc>0.1){el.className='tfa bull';arrow.textContent='↑';arrow.style.color='var(--green)';val.style.color='var(--green)';}
     else if(sc<-0.1){el.className='tfa bear';arrow.textContent='↓';arrow.style.color='var(--red)';val.style.color='var(--red)';}
     else{el.className='tfa flat';arrow.textContent='→';arrow.style.color='var(--yellow)';val.style.color='var(--yellow)';}
-    val.textContent=bp+'% buy';
-    const d=S.tfData[tf];sub.textContent=fmtX(d.buy+d.sell)+' XRP';
+    val.textContent=bp2+'% buy';
   });
 
-  // Alignment reading
+  // Align box
   const am=document.getElementById('align-main');
-  const as2=document.getElementById('align-sub');
+  const as=document.getElementById('align-sub');
   const cb=document.getElementById('compass-badge');
-  let alignMsg,alignSub,compassReading,compassSub,compassAction;
+  if(C.bullTFs===4){am.textContent='⚡ ALL 4 TIMEFRAMES BULLISH';am.style.color='var(--green)';cb.textContent='FULL ALIGN 🟢';}
+  else if(C.bearTFs===4){am.textContent='⚡ ALL 4 TIMEFRAMES BEARISH';am.style.color='var(--red)';cb.textContent='FULL ALIGN 🔴';}
+  else if(C.bullTFs>=3){am.textContent='3+ TIMEFRAMES BULLISH';am.style.color='var(--green)';cb.textContent='BULL LEAN 🟢';}
+  else if(C.bearTFs>=3){am.textContent='3+ TIMEFRAMES BEARISH';am.style.color='var(--red)';cb.textContent='BEAR LEAN 🔴';}
+  else{am.textContent='TIMEFRAMES DIVERGING';am.style.color='var(--yellow)';cb.textContent='MIXED 🟡';}
+  document.getElementById('compass-meaning').textContent=C.compassMeaning;
+  document.getElementById('compass-action').textContent=C.compassAction;
 
-  if(S.tradeCount<BASELINE_MIN){
-    alignMsg='CALIBRATING';alignSub='Need more data. Check back in a moment.';
-    compassReading='--';compassSub='Building session baseline...';compassAction='';
-  } else if(strongAligned&&avg>0){
-    alignMsg='⚡ ALL FOUR TIMEFRAMES BULLISH';
-    alignSub='Momentum is stacking up across every timeframe. This is the rare setup where buyers are dominant from 1-minute to 1-hour simultaneously. High conviction zone.';
-    compassReading='ALIGNED BULL';compassSub='1m, 5m, 15m, and 1h all confirm buying momentum.';
-    compassAction='All four timeframes aligned bullish. This is when moves tend to have follow-through.';
-    am.style.color='var(--green)';
-    if(prevAlignState!=='strongbull'){playAlign();pushTimeline('All Timeframes Aligned Bullish','Every timeframe from 1-minute to 1-hour is showing buy pressure simultaneously. This is statistically rare and often precedes sustained upward movement. Watch for volume to confirm.','buy',['4-tf align','high confidence'],new Date().toTimeString().slice(0,8));prevAlignState='strongbull';}
-    cb.textContent='ALL ALIGNED 🟢';
-  } else if(strongAligned&&avg<0){
-    alignMsg='⚡ ALL FOUR TIMEFRAMES BEARISH';
-    alignSub='Momentum is stacking downward across every timeframe. Sellers are dominant from 1-minute to 1-hour. High risk zone.';
-    compassReading='ALIGNED BEAR';compassSub='1m, 5m, 15m, and 1h all confirm selling momentum.';
-    compassAction='All four timeframes aligned bearish. Strong risk-off signal.';
-    am.style.color='var(--red)';
-    if(prevAlignState!=='strongbear'){playAlign();pushTimeline('All Timeframes Aligned Bearish','Every timeframe from 1-minute to 1-hour is showing sell pressure simultaneously. This is the mirror of the bullish alignment — statistically rare and often signals sustained downward pressure.','sell',['4-tf align','high confidence'],new Date().toTimeString().slice(0,8));prevAlignState='strongbear';}
-    cb.textContent='ALL ALIGNED 🔴';
-  } else if(aligned&&avg>0){
-    alignMsg='3+ TIMEFRAMES BULLISH';alignSub='Most timeframes confirm buying momentum. Not all aligned, but meaningful directional confluence.';
-    compassReading='BULL LEAN';compassSub='Majority of timeframes bullish. Watch 1h to confirm.';compassAction='';am.style.color='var(--green)';cb.textContent='3/4 BULL 🟢';
-    if(prevAlignState!=='bull3'){prevAlignState='bull3';}
-  } else if(aligned&&avg<0){
-    alignMsg='3+ TIMEFRAMES BEARISH';alignSub='Most timeframes confirm selling momentum. Watch for the remaining timeframe to flip.';
-    compassReading='BEAR LEAN';compassSub='Majority of timeframes bearish.';compassAction='';am.style.color='var(--red)';cb.textContent='3/4 BEAR 🔴';
-    if(prevAlignState!=='bear3'){prevAlignState='bear3';}
-  } else{
-    alignMsg='TIMEFRAMES DIVERGING';alignSub='Short and long timeframes are pointing in different directions. This is a wait-and-see moment — no clear edge. Market is deciding direction.';
-    compassReading='MIXED SIGNALS';compassSub='Short-term and long-term momentum disagree.';compassAction='Wait for alignment before reading directional momentum.';am.style.color='var(--yellow)';cb.textContent='DIVERGED 🟡';
-    prevAlignState='mixed';
-  }
+  // Compass reading
+  const cr2=document.getElementById('compass-reading');
+  if(C.bullTFs===4){cr2.textContent='FULL BULL ALIGN';cr2.style.color='var(--green)';}
+  else if(C.bearTFs===4){cr2.textContent='FULL BEAR ALIGN';cr2.style.color='var(--red)';}
+  else if(C.bullTFs>=3){cr2.textContent='BULL LEAN';cr2.style.color='var(--green)';}
+  else if(C.bearTFs>=3){cr2.textContent='BEAR LEAN';cr2.style.color='var(--red)';}
+  else{cr2.textContent='MIXED SIGNALS';cr2.style.color='var(--yellow)';}
 
-  document.getElementById('align-main').textContent=alignMsg;
-  document.getElementById('align-sub').textContent=alignSub;
-  document.getElementById('compass-reading').textContent=compassReading;
-  document.getElementById('compass-reading').style.color=avg>0.15?'var(--green)':avg<-0.15?'var(--red)':'var(--yellow)';
-  document.getElementById('compass-sub').textContent=compassSub;
-  const ca=document.getElementById('compass-action');
-  if(compassAction){
-    ca.textContent=compassAction;
-    ca.style.cssText=`margin-top:10px;padding:8px 16px;border-radius:3px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-align:center;border:1px solid ${avg>0?'rgba(0,232,122,.3)':'avg'<0?'rgba(255,51,85,.3)':'var(--border)'};background:${avg>0?'rgba(0,232,122,.08)':avg<0?'rgba(255,51,85,.08)':'rgba(0,0,0,.2)'};color:${avg>0?'var(--green)':avg<0?'var(--red)':'var(--yellow)'};`;
-  } else ca.textContent='';
-
-  // Only redraw compass if needle moved more than 0.5 degrees
-  S.compassTarget=targetAngle;
-  if(Math.abs(targetAngle-(S.lastDrawnAngle||0))>0.5||strongAligned!==S.lastDrawnAligned){
-    S.lastDrawnAngle=targetAngle;
-    S.lastDrawnAligned=strongAligned;
-    drawCompass(S.compassTarget,avg,strongAligned,allBull,allBear);
-  }
-}
-
-// ═══════════════════════════════════════════════════
-// COMPASS CANVAS
-// ═══════════════════════════════════════════════════
-function drawCompass(angle,avg,strongAligned,allBull,allBear){
-  const canvas=document.getElementById('compass-canvas');
-  const ctx=canvas.getContext('2d');
-  const W=220,H=220,cx=110,cy=110,r=90;
-  ctx.clearRect(0,0,W,H);
-
-  // Outer ring
-  ctx.beginPath();
-  ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='rgba(0,200,255,0.08)';
-  ctx.lineWidth=1;
-  ctx.stroke();
-
-  // Arc fill - bear side
-  ctx.beginPath();
-  ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI,false);
-  ctx.strokeStyle='rgba(255,51,85,0.12)';
-  ctx.lineWidth=16;
-  ctx.stroke();
-
-  // Arc fill - bull side
-  ctx.beginPath();
-  ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI,true);
-  ctx.strokeStyle='rgba(0,232,122,0.12)';
-  ctx.lineWidth=16;
-  ctx.stroke();
-
-  // Dynamic arc based on momentum
-  if(Math.abs(avg)>0.05){
-    const arcLen=Math.abs(avg)*Math.PI*0.85;
-    ctx.beginPath();
-    if(avg>0){
-      ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+arcLen,false);
-      ctx.strokeStyle=`rgba(0,232,122,${0.2+avg*0.4})`;
-    }else{
-      ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2-Math.abs(avg)*Math.PI*0.85,true);
-      ctx.strokeStyle=`rgba(255,51,85,${0.2+Math.abs(avg)*0.4})`;
-    }
-    ctx.lineWidth=16;
-    ctx.stroke();
-  }
-
-  // Tick marks
-  for(let i=0;i<12;i++){
-    const a=-Math.PI/2+i*(Math.PI*2/12);
-    const x1=cx+Math.cos(a)*(r-12),y1=cy+Math.sin(a)*(r-12);
-    const x2=cx+Math.cos(a)*(r-6),y2=cy+Math.sin(a)*(r-6);
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
-    ctx.strokeStyle='rgba(0,200,255,0.2)';ctx.lineWidth=1;ctx.stroke();
-  }
-
-  // Labels
-  ctx.font='bold 8px Share Tech Mono';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='rgba(255,51,85,0.7)';ctx.fillText('SELL',cx-80,cy+2);
-  ctx.fillStyle='rgba(0,232,122,0.7)';ctx.fillText('BUY',cx+80,cy+2);
-  ctx.fillStyle='rgba(0,200,255,0.4)';ctx.fillText('NEUTRAL',cx,cy-85);
-
-  // TF dots around the ring
-  const tfAngles={};
-  const tfKeys=['1m','5m','15m','1h'];
-  tfKeys.forEach((tf,i)=>{
-    const d=S.tfData[tf];
-    const t=d.buy+d.sell;
-    const bp=t>100?(d.buy/t-0.5)*2:0;
-    const angle2=bp*75; // degrees from neutral
-    const rad=(angle2-90)*Math.PI/180;
-    const dotR=r-24;
-    const x=cx+Math.cos(rad)*dotR,y=cy+Math.sin(rad)*dotR;
-    ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
-    const col=bp>0.1?'#00e87a':bp<-0.1?'#ff3355':'#ffc940';
-    ctx.fillStyle=col;ctx.fill();
-    ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=1;ctx.stroke();
-    ctx.font='7px Share Tech Mono';ctx.fillStyle='rgba(200,230,255,.7)';
-    ctx.fillText(tf,x,y+(bp>0?12:-12));
-    tfAngles[tf]={x,y};
-  });
-
-  // Glowing effect if all aligned
-  if(strongAligned){
-    ctx.beginPath();ctx.arc(cx,cy,r+8,0,Math.PI*2);
-    ctx.strokeStyle=allBull>allBear?'rgba(0,232,122,0.15)':'rgba(255,51,85,0.15)';
-    ctx.lineWidth=6;ctx.stroke();
-  }
-
-  // Needle shadow
-  const needleRad=(angle-90)*Math.PI/180;
-  const nx=cx+Math.cos(needleRad)*(r-28);
-  const ny=cy+Math.sin(needleRad)*(r-28);
-  ctx.shadowBlur=12;
-  ctx.shadowColor=avg>0.1?'rgba(0,232,122,.6)':avg<-0.1?'rgba(255,51,85,.6)':'rgba(255,201,64,.4)';
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);
-  ctx.strokeStyle=avg>0.1?'#00e87a':avg<-0.1?'#ff3355':'#ffc940';
-  ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
-  ctx.shadowBlur=0;
-
-  // Needle base dot
-  ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);
-  ctx.fillStyle='white';ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);
-  ctx.fillStyle=avg>0.1?'#00e87a':avg<-0.1?'#ff3355':'#ffc940';ctx.fill();
-}
-
-// ═══════════════════════════════════════════════════
-// ABSORPTION COMPUTE
-// ═══════════════════════════════════════════════════
-let lastAbsBuy=-1,lastAbsSell=-1;
-function computeAbsorption(){
-  if(S.absWin.length<10)return;
-  const prices=S.absWin.map(t=>t.price);
-  const minP=Math.min(...prices),maxP=Math.max(...prices);
-  const priceRange=(maxP-minP)/((maxP+minP)/2||1);
-  const isFlat=priceRange<S.absThreshold;
-
-  const buyVol=S.absWin.filter(t=>t.isBuy).reduce((s,t)=>s+t.qty,0);
-  const sellVol=S.absWin.filter(t=>!t.isBuy).reduce((s,t)=>s+t.qty,0);
-  const tot=buyVol+sellVol||1;
-  const buyAbs=buyVol/tot*100;
-  const sellAbs=sellVol/tot*100;
-
-  // Only update DOM if values changed meaningfully
-  if(Math.abs(buyAbs-lastAbsBuy)>1||Math.abs(sellAbs-lastAbsSell)>1){
-    lastAbsBuy=buyAbs;lastAbsSell=sellAbs;
-    document.getElementById('abs-buy-fill').style.width=buyAbs+'%';
-    document.getElementById('abs-sell-fill').style.width=sellAbs+'%';
-    document.getElementById('abs-buy-val').textContent=buyAbs.toFixed(0)+'%';
-    document.getElementById('abs-sell-val').textContent=sellAbs.toFixed(0)+'%';
-  }
-
-  const statusEl=document.getElementById('abs-status');
-  if(isFlat&&buyAbs>65){
-    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid rgba(0,232,122,.25);background:rgba(0,232,122,.06);color:var(--green);';
-    statusEl.textContent='🟢 Possible Buy Absorption — Price flat while buyers dominate. A hidden buyer may be absorbing sell pressure.';
-  } else if(isFlat&&sellAbs>65){
-    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid rgba(255,51,85,.25);background:rgba(255,51,85,.06);color:var(--red);';
-    statusEl.textContent='🔴 Possible Sell Absorption — Price flat while sellers dominate. A hidden seller may be capping any upward moves.';
-  } else if(isFlat){
-    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);';
-    statusEl.textContent='Price is flat but flow is mixed — consolidation, not clear absorption.';
-  } else{
-    statusEl.style.cssText='font-size:11px;margin-top:5px;padding:5px 8px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);';
-    statusEl.textContent='Price is moving — absorption monitoring active but no pattern detected.';
-  }
-}
-
-// ═══════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════
-function renderAll(){
-  // kept for periodic slow refresh only
-  renderBaseline();
-  renderTimeline();
-  renderAnomalies();
+  // Absorption
   computeAbsorption();
-  computeCompass();
-}
 
-function renderBaseline(){
-  if(S.tradeCount<10)return;
-  document.getElementById('bl-avg').textContent=fmtX(S.avgSize)+' XRP';
-  document.getElementById('bl-int').textContent=S.avgInterval>1000?(S.avgInterval/1000).toFixed(1)+'s':Math.round(S.avgInterval)+'ms';
-  const sessionMins=(Date.now()-S.sessionStart)/60000;
-  const wph=sessionMins>0?((S.whalesThisSession/sessionMins)*60).toFixed(1):0;
-  document.getElementById('bl-whr').textContent=wph;
-  document.getElementById('baseline-age').textContent=S.tradeCount+' TRADES';
+  // Baseline
+  if(S.tradeCount>0){
+    document.getElementById('bl-avg').textContent=fmtX(S.avgSize)+' XRP';
+    document.getElementById('bl-int').textContent=S.avgInterval>1000?(S.avgInterval/1000).toFixed(1)+'s':Math.round(S.avgInterval)+'ms';
+    const mins=(Date.now()-S.sessionStart)/60000;
+    document.getElementById('bl-whr').textContent=mins>0?((S.whaleCount/mins)*60).toFixed(1):'0';
+    document.getElementById('bl-ct').textContent=S.tradeCount+' TRADES';
+  }
 
   // Anomaly engine state
-  const ae=document.getElementById('anom-state'),as2=document.getElementById('anom-sub');
-  if(S.tradeCount<BASELINE_MIN){
-    ae.textContent='CALIBRATING BASELINE';ae.style.color='var(--muted)';
-    as2.textContent=`${BASELINE_MIN-S.tradeCount} more trades needed to establish normal behaviour.`;
-    document.getElementById('anom-icon').textContent='📊';
-  }else{
-    ae.textContent='ANOMALY ENGINE ACTIVE';ae.style.color='var(--green)';
-    as2.textContent=`Watching for trades above ${ANOMALY_MULT}x session average (${fmtX(S.avgSize*ANOMALY_MULT)} XRP).`;
-    document.getElementById('anom-icon').textContent='👁';
-  }
-
-  document.getElementById('s-anom').textContent=S.anomalyCount;
-  const recentMults=S.anomalies.slice(0,5).map(a=>a.mult);
-  document.getElementById('s-mult').textContent=recentMults.length?(recentMults.reduce((a,b)=>a+b,0)/recentMults.length).toFixed(1)+'x':'0x';
-  const str=S.anomalyCount>10?'HIGH':S.anomalyCount>4?'MEDIUM':'LOW';
-  const sc=document.getElementById('s-str');sc.textContent=str;sc.style.color=str==='HIGH'?'var(--red)':str==='MEDIUM'?'var(--yellow)':'var(--green)';
+  const ae=document.getElementById('anom-state');
+  if(S.tradeCount<BASELINE_MIN){ae.textContent='CALIBRATING';ae.style.color='var(--muted)';document.getElementById('anom-icon').textContent='📊';document.getElementById('anom-sub').textContent=`${BASELINE_MIN-S.tradeCount} more trades to calibrate...`;}
+  else{ae.textContent='ACTIVE — WATCHING';ae.style.color='var(--green)';document.getElementById('anom-icon').textContent='👁';document.getElementById('anom-sub').textContent=`Flagging trades >${ANOMALY_MULT}x session avg (>${fmtX(S.avgSize*ANOMALY_MULT)} XRP).`;}
 }
 
-let tlRenderedCount=0;
-function renderTimeline(){
-  document.getElementById('tl-count').textContent=S.timeline.length+' EVENTS';
-  if(!S.timeline.length)return;
-  const container=document.getElementById('timeline');
-  // Remove placeholder if present
-  const placeholder=container.querySelector('.tl-placeholder');
-  if(placeholder)placeholder.remove();
-  // Only prepend new items — don't rebuild existing ones
-  const newItems=S.timeline.slice(0,Math.max(0,S.timeline.length-tlRenderedCount));
-  if(!newItems.length)return;
-  newItems.reverse().forEach(e=>{
-    const div=document.createElement('div');
-    div.className='tl-item';
-    div.innerHTML=`
-      <div class="tl-left">
-        <div class="tl-time">${e.time}</div>
-        <div class="tl-dot ${e.type}"></div>
-        <div class="tl-line"></div>
-      </div>
-      <div class="tl-right">
-        <div class="tl-title ${e.type}">${e.title}</div>
-        <div class="tl-body">${e.body}</div>
-        ${e.tags&&e.tags.length?`<div class="tl-tags">${e.tags.map(t=>`<div class="tl-tag">${t}</div>`).join('')}</div>`:''}
-      </div>`;
-    container.insertBefore(div,container.firstChild);
-  });
-  tlRenderedCount=S.timeline.length;
-  // Cap DOM to 25 items
-  while(container.children.length>25)container.removeChild(container.lastChild);
+function setBar(fillId,val,col,display,valId){
+  const f=document.getElementById(fillId);if(f)f.style.height=Math.min(100,val)+'%';
+  const v=document.getElementById(valId);if(v)v.textContent=display;
+}
+function setBarSimple(fillId,val,col,valId,display){
+  const f=document.getElementById(fillId);
+  if(f){f.style.width=Math.min(100,Math.max(0,val))+'%';f.style.background=col;}
+  const v=document.getElementById(valId);if(v){v.textContent=display;v.style.color=col;}
 }
 
-let anomRenderedCount=0;
-function renderAnomalies(){
-  document.getElementById('anom-ct').textContent=S.anomalies.length;
-  if(!S.anomalies.length)return;
-  const container=document.getElementById('anom-list');
-  const placeholder=container.querySelector('div[style]');
-  if(placeholder&&!anomRenderedCount)container.innerHTML='';
-  // Only prepend truly new items
-  const newItems=S.anomalies.slice(0,Math.max(0,S.anomalies.length-anomRenderedCount));
+// ═══════════════════════════════════════════════════
+// RENDER — WHALE LIST (prepend only)
+// ═══════════════════════════════════════════════════
+let whaleRendered=0;
+function renderWhaleList(){
+  document.getElementById('whale-ct').textContent=S.whales.length;
+  const container=document.getElementById('whale-list');
+  const ph=container.querySelector('div[style]');if(ph)ph.remove();
+  const newItems=S.whales.slice(0,S.whales.length-whaleRendered);
   if(!newItems.length)return;
-  newItems.reverse().forEach(a=>{
+  newItems.reverse().forEach(w=>{
     const div=document.createElement('div');
-    div.className=`anom-item ${a.type}`;
+    div.className=`whale-item ${w.tier==='mega'?'mega':w.isBuy?'buy':'sell'}`;
+    const elapsed=Math.round((Date.now()-w.time)/60000);
+    const elStr=elapsed<1?'Just now':elapsed===1?'1 min ago':elapsed+'m ago';
+    const meaning=w.isBuy?
+      (w.qty>=1000000?'Extremely large buy — institutional scale. Possible accumulation.':`Large buy on ${w.exchange}. Notable buying interest.`):
+      (w.qty>=1000000?'Extremely large sell — possible distribution or stop-flush.':`Large sell on ${w.exchange}. Notable selling pressure.`);
     div.innerHTML=`
-      <div class="anom-hdr">
-        <div class="anom-title" style="color:${a.type==='buy'?'var(--green)':a.type==='sell'?'var(--red)':'var(--yellow)'}">${a.title}</div>
-        <div class="anom-time">${a.time}</div>
+      <div class="wh-top">
+        <div class="wh-title ${w.tier==='mega'?'mega':w.isBuy?'buy':'sell'}">${w.tier==='mega'?'🐋🐋':'🐋'} ${w.isBuy?'Large Buy Detected':'Large Sell Detected'}</div>
+        <div class="wh-time">${w.ts}</div>
       </div>
-      <div class="anom-body">${a.body}</div>
-      <div class="anom-stat">${a.exchange} · ${a.mult.toFixed(1)}x baseline</div>
-      <div>${a.isBurst?'<span class="sig-badge sig-anomaly">🔥 VELOCITY BURST</span>':'<span class="sig-badge sig-pattern">⚡ ANOMALOUS PRINT</span>'}</div>`;
+      <div class="wh-detail">${fmtX(w.qty)} XRP · £${fmtN(w.price,4)} · <span class="wh-exchange">${w.exchange}</span></div>
+      <div class="wh-meaning" style="font-size:10px;font-style:italic;color:rgba(200,220,255,.7);margin-bottom:3px;">${meaning}</div>
+      <div style="font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;">${elStr}</div>`;
     container.insertBefore(div,container.firstChild);
   });
-  anomRenderedCount=S.anomalies.length;
+  whaleRendered=S.whales.length;
   while(container.children.length>12)container.removeChild(container.lastChild);
 }
 
 // ═══════════════════════════════════════════════════
-// FORMATTERS
+// RENDER — ANOMALY LIST (prepend only)
 // ═══════════════════════════════════════════════════
+function renderAnomalyList(){
+  document.getElementById('anom-ct').textContent=S.anomalies.length;
+  const container=document.getElementById('anom-list');
+  const ph=container.querySelector('div[style]');if(ph&&!anomRendered)container.innerHTML='';
+  const newItems=S.anomalies.slice(0,S.anomalies.length-anomRendered);
+  if(!newItems.length)return;
+  newItems.reverse().forEach(a=>{
+    const div=document.createElement('div');
+    div.className=`anom-item ${a.type}`;
+    const titleCol=a.type==='buy'?'var(--green)':a.type==='sell'?'var(--red)':'var(--yellow)';
+    div.innerHTML=`
+      <div class="anom-hdr">
+        <div class="anom-title" style="color:${titleCol};">${a.title}</div>
+        <div class="anom-time">${a.ts}</div>
+      </div>
+      <div class="anom-body">${a.body}</div>
+      <div>${a.isBurst?'<span class="sig-badge sig-burst">🔥 VELOCITY BURST</span>':'<span class="sig-badge sig-anom">⚡ ANOMALY</span>'}</div>`;
+    container.insertBefore(div,container.firstChild);
+  });
+  anomRendered=S.anomalies.length;
+  while(container.children.length>12)container.removeChild(container.lastChild);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER — ALERT FEED (prepend only)
+// ═══════════════════════════════════════════════════
+function renderAlertFeed(){
+  document.getElementById('af-ct').textContent=S.alertFeed.length;
+  const container=document.getElementById('alert-feed');
+  const ph=container.querySelector('div[style]');if(ph&&!afRendered)container.innerHTML='';
+  const newItems=S.alertFeed.slice(0,S.alertFeed.length-afRendered);
+  if(!newItems.length)return;
+  const impLabels={'low':'🟢 Low Impact','med':'🟡 Medium Impact','high':'🔴 High Impact'};
+  newItems.reverse().forEach(a=>{
+    const div=document.createElement('div');
+    div.className=`af-item ${a.type}`;
+    div.innerHTML=`
+      <div class="af-time">${a.ts}</div>
+      <div class="af-msg">${a.msg}</div>
+      ${a.detail?`<div class="af-detail">${a.detail}</div>`:''}
+      ${a.meaning?`<div class="af-detail" style="margin-top:2px;font-style:italic;">${a.meaning}</div>`:''}
+      <div class="imp ${a.impact}">${impLabels[a.impact]||'🟢 Low Impact'}</div>`;
+    container.insertBefore(div,container.firstChild);
+  });
+  afRendered=S.alertFeed.length;
+  while(container.children.length>20)container.removeChild(container.lastChild);
+}
+
+// ═══════════════════════════════════════════════════
+// ABSORPTION
+// ═══════════════════════════════════════════════════
+let lastAbsB=-1,lastAbsS=-1;
+function computeAbsorption(){
+  if(S.absWin.length<5)return;
+  const prices=S.absWin.map(t=>t.price);
+  const mn=Math.min(...prices),mx=Math.max(...prices);
+  const range=(mx-mn)/((mx+mn)/2||1);
+  const isFlat=range<0.003;
+  const bv=S.absWin.filter(t=>t.isBuy).reduce((s,t)=>s+t.qty,0);
+  const sv=S.absWin.filter(t=>!t.isBuy).reduce((s,t)=>s+t.qty,0);
+  const tot=bv+sv||1;
+  const ba=bv/tot*100,sa=sv/tot*100;
+  if(Math.abs(ba-lastAbsB)>1||Math.abs(sa-lastAbsS)>1){
+    lastAbsB=ba;lastAbsS=sa;
+    document.getElementById('abs-bf').style.width=ba+'%';
+    document.getElementById('abs-sf').style.width=sa+'%';
+    document.getElementById('abs-bv').textContent=ba.toFixed(0)+'%';
+    document.getElementById('abs-sv').textContent=sa.toFixed(0)+'%';
+  }
+  const el=document.getElementById('abs-status');
+  const absM=document.getElementById('abs-meaning');
+  bs-action');
+  if(isFlat&&ba>65){
+    el.style.cssText='font-size:11px;padding:6px 9px;border-radius:3px;border:1px solid rgba(0,232,122,.25);background:rgba(0,232,122,.06);color:var(--green);';
+    el.textContent='🟢 Buy Absorption Detected — price flat, buyers dominating volume';
+    absM.textContent='A hidden buyer appears to be sitting below price, absorbing every sell that comes in.';
+    absA.textContent='Bullish signal. If price stays flat under selling, expect a push higher when sellers exhaust.';}
+  else if(isFlat&&sa>65){
+    el.style.cssText='font-size:11px;padding:6px 9px;border-radius:3px;border:1px solid rgba(255,51,85,.25);background:rgba(255,51,85,.06);color:var(--red);';
+    el.textContent='🔴 Sell Absorption Detected — price flat, sellers dominating volume';
+    absM.textContent='A hidden seller appears to be capping the price, absorbing every buy that pushes up.';
+    absA.textContent='Bearish signal. Sustained sell absorption often precedes a drop when buyers give up.';}
+  else{
+    el.style.cssText='font-size:11px;padding:6px 9px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);';
+    el.textContent=isFlat?'Price flat — watching for absorption pattern to form':'No absorption — price is moving normally';}
+}
+
+function renderCanvas(){
+  if(!lastC)return;
+  const C=lastC;
+  const avg=C.avgTF;
+  const angle=avg*82;
+  if(Math.abs(angle-S.lastDrawnAngle)>0.5||C.bullTFs!==S.lastDrawnAligned){
+    S.lastDrawnAngle=angle;S.lastDrawnAligned=C.bullTFs;
+    drawCompass(angle,avg,C.bullTFs,C.bearTFs);
+  }
+}
+
+function drawCompass(angle,avg,bullTFs,bearTFs){
+  const canvas=document.getElementById('compass-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=200,H=200,cx=100,cy=100,R=78;
+  ctx.clearRect(0,0,W,H);
+  if(bullTFs===4||bearTFs===4){
+    const gc=ctx.createRadialGradient(cx,cy,20,cx,cy,R+10);
+    gc.addColorStop(0,bullTFs>bearTFs?'rgba(0,232,122,0.08)':'rgba(255,51,85,0.08)');
+    gc.addColorStop(1,'transparent');
+    ctx.fillStyle=gc;ctx.fillRect(0,0,W,H);
+  }
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(168,85,247,0.12)';ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI,0,false);
+  ctx.strokeStyle='rgba(255,51,85,0.1)';ctx.lineWidth=14;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI,0,true);
+  ctx.strokeStyle='rgba(0,232,122,0.1)';ctx.lineWidth=14;ctx.stroke();
+  if(Math.abs(avg)>0.04){
+    const arcL=Math.abs(avg)*Math.PI*0.82;
+    ctx.beginPath();
+    if(avg>0)ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+arcL,false);
+    else ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2-arcL,true);
+    ctx.strokeStyle=avg>0?`rgba(0,232,122,${0.18+avg*0.35})`:`rgba(255,51,85,${0.18+Math.abs(avg)*0.35})`;
+    ctx.lineWidth=14;ctx.stroke();
+  }
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2-Math.PI/2;
+    const x1=cx+Math.cos(a)*(R-10),y1=cy+Math.sin(a)*(R-10);
+    const x2=cx+Math.cos(a)*(R-5),y2=cy+Math.sin(a)*(R-5);
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+    ctx.strokeStyle='rgba(168,85,247,0.18)';ctx.lineWidth=1;ctx.stroke();
+  }
+  ['1m','5m','15m','1h'].forEach((tf)=>{
+    const d=S.tfData[tf],t=d.buy+d.sell;
+    const sc=t>50?(d.buy/t-0.5)*2:0;
+    const a2=(sc*72-90)*Math.PI/180;
+    const dr=R-24;
+    const x=cx+Math.cos(a2)*dr,y=cy+Math.sin(a2)*dr;
+    ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.fillStyle=sc>0.1?'#00e87a':sc<-0.1?'#ff3355':'#ffc940';ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='6px Share Tech Mono';ctx.fillStyle='rgba(200,220,255,.7)';ctx.textAlign='center';
+    ctx.fillText(tf,x,y+(sc>0?11:-8));
+  });
+  ctx.font='bold 8px Share Tech Mono';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,51,85,0.6)';ctx.fillText('SELL',cx-72,cy+2);
+  ctx.fillStyle='rgba(0,232,122,0.6)';ctx.fillText('BUY',cx+72,cy+2);
+  ctx.fillStyle='rgba(168,85,247,0.5)';ctx.fillText('NEUTRAL',cx,cy-74);
+  const nr=(angle-90)*Math.PI/180;
+  const nx=cx+Math.cos(nr)*(R-26),ny=cy+Math.sin(nr)*(R-26);
+  ctx.shadowBlur=10;
+  ctx.shadowColor=avg>0.08?'rgba(0,232,122,.5)':avg<-0.08?'rgba(255,51,85,.5)':'rgba(255,201,64,.35)';
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);
+  ctx.strokeStyle=avg>0.08?'#00e87a':avg<-0.08?'#ff3355':'#ffc940';
+  ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='rgba(168,85,247,0.8)';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,2.5,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();
+}
+
+let prevDeltaSign=0;
+setInterval(()=>{
+  if(!S.priceGbp)return;
+  const sign=S.cumDelta>=0?1:-1;
+  if(prevDeltaSign&&sign!==prevDeltaSign){
+    if(sign>0)pushAlert('buy','Buyers Gained Control','Delta turned positive. More XRP bought than sold.','Momentum shifted to buyers.','high');
+    else pushAlert('sell','Sellers Gained Control','Delta turned negative. More XRP sold than bought.','Momentum shifted to sellers.','high');
+  }
+  prevDeltaSign=sign;
+},10000);
+
+let prevBpBucket=0;
+setInterval(()=>{
+  if(!S.priceGbp)return;
+  const tot=S.buyVol+S.sellVol||1;
+  const bp=S.buyVol/tot;
+  const bucket=bp>0.6?2:bp>0.52?1:bp<0.4?-2:bp<0.48?-1:0;
+  if(prevBpBucket&&bucket!==prevBpBucket){
+    if(bucket>0)pushAlert('buy','Buy Pressure Rising',(bp*100).toFixed(0)+'% of volume is buying','Buyers becoming more dominant.','med');
+    else if(bucket<0)pushAlert('sell','Sell Pressure Rising',((1-bp)*100).toFixed(0)+'% of volume is selling','Sellers becoming more dominant.','med');
+  }
+  prevBpBucket=bucket;
+},15000);
+
 function fmtN(n,d=2){return Number(n).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});}
 function fmtX(n){if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.floor(n).toLocaleString('en-GB');}
 
-// ═══════════════════════════════════════════════════
-// EASTER EGG
-// ═══════════════════════════════════════════════════
 const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 let ks=[],eggOn=false;
 const EGG=`SIGNAL LAYER — CLASSIFIED
 
-Three things nobody else built for you:
+Rose said build it properly.
+So that's what we did.
 
-The Drift Compass
-The Narrative Timeline
-The Anomaly Engine
+Every number explains itself.
+Every signal tells you so what.
+Every panel answers three questions:
 
-Not because they're easy.
-Because they're what matters.
+What is happening?
+What does it mean?
+What should I watch next?
 
-A 30K trade when average is 800 XRP
-is louder than a 500K trade
-in a noisy session.
-
-When all four timeframes align —
-that's the signal in the silence.
-
-The market tells a story.
-This writes it down.
+XRP doesn't move on news.
+It moves when they're ready.
 
 Keep watching the dark water.
 The lotus grows there.
 
-⬡  REN × WEBZY87 · SIGNAL LAYER`;
+REN x WEBZY87 x ROSE · SIGNAL LAYER v2`;
 
 function showEgg(){
   if(eggOn)return;eggOn=true;
   const sc=document.getElementById('eggstars');sc.innerHTML='';
-  for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${Math.random()*100}%;animation-duration:${3+Math.random()*5}s;animation-delay:${Math.random()*4}s;`;sc.appendChild(s);}
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    s.style.cssText=`left:${Math.random()*100}%;background:${Math.random()>.5?'#00c8ff':'#a855f7'};animation-duration:${3+Math.random()*5}s;animation-delay:${Math.random()*4}s;`;
+    sc.appendChild(s);
+  }
   document.getElementById('eggtxt').textContent=EGG;
   document.getElementById('egg').classList.add('on');
 }
@@ -1022,19 +1230,15 @@ let lc=0,lt;
 document.getElementById('logoclick').addEventListener('click',()=>{lc++;clearTimeout(lt);lt=setTimeout(()=>lc=0,600);if(lc>=3)showEgg();});
 let xb='';document.addEventListener('keypress',e=>{xb=(xb+e.key).slice(-3);if(xb.toLowerCase()==='xrp')showEgg();});
 
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
 async function init(){
+  drawCompass(0,0,0,0);
   await fetchGbp();
   connectBinance();
   setTimeout(connectKraken,500);
   setTimeout(connectCoinbase,1000);
   setTimeout(connectBitstamp,1500);
   setTimeout(connectOKX,2000);
-  // Initial compass draw
-  drawCompass(0,0,false,0,0);
-  setInterval(()=>{renderBaseline();computeAbsorption();},8000);
+  setInterval(()=>{if(lastC){renderDOM();renderCanvas();}},6000);
 }
 init();
 </script>
