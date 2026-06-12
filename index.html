@@ -603,7 +603,7 @@ function setConn(alive){
   document.getElementById('ctxt').textContent=alive?'LIVE · 5 EXCHANGES':'CONNECTING...';
 }
 function connectBinance(){
-  const ws=new WebSocket('wss://stream.binance.com:9443/ws/xrpusdt@aggTrade');
+  const ws=new WebSocket('wss://stream.binance.com:443/ws/xrpusdt@aggTrade');
   ws.onopen=()=>setConn(true);
   ws.onmessage=e=>{try{const d=JSON.parse(e.data);onTrade('Binance',parseFloat(d.p)*S.gbp,parseFloat(d.q),!d.m);}catch{}};
   ws.onerror=()=>{};ws.onclose=()=>{setConn(false);setTimeout(connectBinance,RECONN);};
@@ -611,7 +611,7 @@ function connectBinance(){
 function connectKraken(){try{const ws=new WebSocket('wss://ws.kraken.com');ws.onopen=()=>ws.send(JSON.stringify({event:'subscribe',pair:['XRP/USD'],subscription:{name:'trade'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(Array.isArray(d)&&d[2]==='trade')d[1].forEach(t=>onTrade('Kraken',parseFloat(t[0])*S.gbp,parseFloat(t[1]),t[3]==='b'));}catch{}};ws.onclose=()=>setTimeout(connectKraken,RECONN);}catch{setTimeout(connectKraken,RECONN);}}
 function connectCoinbase(){try{const ws=new WebSocket('wss://advanced-trade-ws.coinbase.com');ws.onopen=()=>ws.send(JSON.stringify({type:'subscribe',product_ids:['XRP-USD'],channel:'market_trades'}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.channel==='market_trades'&&d.events)d.events.forEach(ev=>{if(ev.trades)ev.trades.forEach(t=>onTrade('Coinbase',parseFloat(t.price)*S.gbp,parseFloat(t.size),t.side==='BUY'));});}catch{}};ws.onclose=()=>setTimeout(connectCoinbase,RECONN);}catch{setTimeout(connectCoinbase,RECONN);}}
 function connectBitstamp(){try{const ws=new WebSocket('wss://ws.bitstamp.net');ws.onopen=()=>ws.send(JSON.stringify({event:'bts:subscribe',data:{channel:'live_trades_xrpusd'}}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.event==='trade')onTrade('Bitstamp',parseFloat(d.data.price)*S.gbp,parseFloat(d.data.amount),parseInt(d.data.type)===0);}catch{}};ws.onclose=()=>setTimeout(connectBitstamp,RECONN);}catch{setTimeout(connectBitstamp,RECONN);}}
-function connectOKX(){try{const ws=new WebSocket('wss://ws.okx.com:8443/ws/v5/public');ws.onopen=()=>ws.send(JSON.stringify({op:'subscribe',args:[{channel:'trades',instId:'XRP-USDT'}]}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.arg?.channel==='trades'&&Array.isArray(d.data))d.data.forEach(t=>onTrade('OKX',parseFloat(t.px)*S.gbp,parseFloat(t.sz),t.side==='buy'));}catch{}};ws.onclose=()=>setTimeout(connectOKX,RECONN);}catch{setTimeout(connectOKX,RECONN);}}
+function connectOKX(){try{const ws=new WebSocket('wss://ws.okx.com:443/ws/v5/public');ws.onopen=()=>ws.send(JSON.stringify({op:'subscribe',args:[{channel:'trades',instId:'XRP-USDT'}]}));ws.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.arg?.channel==='trades'&&Array.isArray(d.data))d.data.forEach(t=>onTrade('OKX',parseFloat(t.px)*S.gbp,parseFloat(t.sz),t.side==='buy'));}catch{}};ws.onclose=()=>setTimeout(connectOKX,RECONN);}catch{setTimeout(connectOKX,RECONN);}}
 
 // ═══════════════════════════════════════════════════
 // CORE TRADE HANDLER
