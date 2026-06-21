@@ -268,6 +268,15 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
       <div id="action-label" class="muted">CALIBRATING</div>
       <div id="action-reason">Need more session data before issuing guidance.</div>
     </div>
+    <div id="regime-box" style="margin-top:8px;padding:8px 10px;border-radius:4px;border:1px solid var(--border2);background:rgba(0,0,0,.2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">MARKET REGIME</span>
+        <span id="regime-tag" class="badge">--</span>
+      </div>
+      <div id="regime-name" style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;margin-bottom:2px;">CALIBRATING</div>
+      <div id="regime-desc" style="font-size:10px;color:var(--muted);line-height:1.5;">Building enough history to classify the regime...</div>
+    </div>
+
   </div>
 
   <div class="card">
@@ -373,6 +382,13 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
 
   <div class="card">
+    <div class="card">
+    <div class="ct">SIGNAL TRACK RECORD <span class="badge" id="wsd-badge">0 LOGGED</span></div>
+    <div id="wsd-rows"><div style="color:var(--muted);font-size:9px;padding:4px;">No signals tracked yet this session. Outcomes are checked 5/15/30 minutes after each signal fires.</div></div>
+    <div class="sw" style="margin-top:8px;"><div class="sw-lbl">SO WHAT?</div><div class="sw-m">Tracks whether past Velocity Bursts and Anomalies were actually followed by favourable price moves.</div><div class="sw-a">Sample sizes start small — treat early win rates as low-confidence until enough signals accumulate.</div></div>
+  </div>
+
+  <div class="card">
     <div class="ct">SESSION BASELINE <span class="badge" id="bl-ct">0 TRADES</span></div>
     <div class="bl-grid">
       <div class="bl-i"><div class="bl-l">AVG SIZE</div><div class="bl-v" id="bl-avg">--</div></div>
@@ -423,7 +439,11 @@ var S={
     OKX:{buy:0,sell:0,alive:false,lastPrice:0}
   },
   priceBeforeBurst:0,
-  priceAtBurst:0
+  priceAtBurst:0,
+  regimeHistory:[],
+  trackedSignals:loadTrackedSignals(),
+  regimeRangeStart:0,
+  regimePriceRange:[]
 };
 
 var actx=null;
@@ -522,7 +542,9 @@ function processAnomaly(exchange,price,qty,isBuy,mult,ts,nowMs){
     type=isBuy?"buy":"sell";playAnom();
   }
   if(title){
-    S.anomalies.unshift({title:title,body:body,type:type,mult:mult,exchange:exchange,ts:ts,isBurst:isBurst});
+    S.anomalies.unshift({title:title,body:body,type:type,mult:mult,exchange:exchange,ts:ts,tsMs:nowMs,isBurst:isBurst});
+    if(isBurst)logSignal(type==="buy"?"burst_buy":type==="sell"?"burst_sell":"burst_neutral",price);
+    else logSignal(type==="buy"?"anomaly_buy":"anomaly_sell",price);
     if(S.anomalies.length>20)S.anomalies.pop();
     renderAnomalyList();
   }
@@ -556,6 +578,121 @@ function pushAlert(type,msg,detail,meaning,impact){
   renderAlertFeed();
 }
 
+
+/* ───────── WHALE SUCCESS DATABASE (localStorage persisted) ───────── */
+var WSD_KEY="xrp_signal_track_v1";
+function loadTrackedSignals(){
+  try{
+    var raw=localStorage.getItem(WSD_KEY);
+    if(!raw)return[];
+    var arr=JSON.parse(raw);
+    // Prune anything older than 2 hours on load to keep it relevant
+    var cutoff=Date.now()-7200000;
+    return arr.filter(function(s){return s.time>cutoff;});
+  }catch(e){return[];}
+}
+function saveTrackedSignals(){
+  try{localStorage.setItem(WSD_KEY,JSON.stringify(S.trackedSignals.slice(-200)));}catch(e){}
+}
+function logSignal(type,priceAtSignal){
+  S.trackedSignals.push({
+    type:type,
+    time:Date.now(),
+    priceAtSignal:priceAtSignal,
+    checked5:false,checked15:false,checked30:false,
+    outcome5:null,outcome15:null,outcome30:null
+  });
+  if(S.trackedSignals.length>300)S.trackedSignals.shift();
+  saveTrackedSignals();
+}
+function updateSignalOutcomes(){
+  if(!S.priceGbp)return;
+  var now=Date.now(),changed=false;
+  S.trackedSignals.forEach(function(sig){
+    var ageMin=(now-sig.time)/60000;
+    var move=(S.priceGbp-sig.priceAtSignal)/sig.priceAtSignal;
+    var expectedUp=sig.type.indexOf("buy")>=0||sig.type.indexOf("bull")>=0;
+    function won(){return expectedUp?move>0.001:move<-0.001;}
+    if(!sig.checked5&&ageMin>=5){sig.checked5=true;sig.outcome5=won();changed=true;}
+    if(!sig.checked15&&ageMin>=15){sig.checked15=true;sig.outcome15=won();changed=true;}
+    if(!sig.checked30&&ageMin>=30){sig.checked30=true;sig.outcome30=won();changed=true;}
+  });
+  if(changed)saveTrackedSignals();
+}
+function getSignalStats(type){
+  var sigs=S.trackedSignals.filter(function(s){return s.type===type&&s.checked15;});
+  if(!sigs.length)return null;
+  var wins=sigs.filter(function(s){return s.outcome15;}).length;
+  var moves=sigs.map(function(s){
+    return (S.priceGbp-s.priceAtSignal)/s.priceAtSignal*100;
+  });
+  var avgMove=moves.reduce(function(a,b){return a+b;},0)/moves.length;
+  return{
+    total:sigs.length,
+    winRate:Math.round(wins/sigs.length*100),
+    avgMove:avgMove,
+    best:Math.max.apply(null,moves),
+    worst:Math.min.apply(null,moves)
+  };
+}
+
+/* ───────── SIGNAL DECAY ───────── */
+function decayWeight(ageMs){
+  var ageMin=ageMs/60000;
+  if(ageMin<=2)return 1.0;
+  if(ageMin<=5)return 0.8;
+  if(ageMin<=15)return 0.5;
+  if(ageMin<=30)return 0.2;
+  return 0;
+}
+function weightedAnomalyScore(now){
+  var totalWeight=0,buyWeight=0,sellWeight=0;
+  S.anomalies.forEach(function(a){
+    var ageMs=now-(a.tsMs||now);
+    var w=decayWeight(ageMs);
+    totalWeight+=w;
+    if(a.type==="buy")buyWeight+=w;
+    else if(a.type==="sell")sellWeight+=w;
+  });
+  return{total:totalWeight,buy:buyWeight,sell:sellWeight};
+}
+
+/* ───────── MARKET REGIME DETECTION ───────── */
+function detectRegime(volatility,avgTF,bp,recentTrades){
+  if(!S.regimeRangeStart)S.regimeRangeStart=Date.now();
+  S.regimePriceRange.push(S.priceGbp);
+  if(S.regimePriceRange.length>120)S.regimePriceRange.shift();
+
+  if(S.regimePriceRange.length<20){
+    return{name:"Calibrating",icon:"⚪",desc:"Building enough price history to classify the regime.",color:"var(--muted)"};
+  }
+
+  var rmin=Math.min.apply(null,S.regimePriceRange);
+  var rmax=Math.max.apply(null,S.regimePriceRange);
+  var rangePct=(rmax-rmin)/((rmax+rmin)/2||1)*100;
+  var trendStrength=Math.abs(avgTF);
+  var pressureSkew=Math.abs(bp-0.5);
+
+  var regime;
+  if(trendStrength>0.35&&rangePct>0.6){
+    regime={name:"Trend",icon:"🟢",desc:(avgTF>0?"Sustained directional buying":"Sustained directional selling")+" — price is moving with conviction in one direction.",color:"var(--green)"};
+  } else if(rangePct<0.35&&pressureSkew<0.1){
+    regime={name:"Range",icon:"🟡",desc:"Price is bouncing within a tight band. Neither side is winning decisively.",color:"var(--yellow)"};
+  } else if(bp>0.55&&rangePct<0.5&&recentTrades<15){
+    regime={name:"Accumulation",icon:"🟣",desc:"Quiet buying into a tight range. Classic pattern for a position being built slowly.",color:"var(--purple)"};
+  } else if(bp<0.45&&rangePct<0.5&&recentTrades<15){
+    regime={name:"Distribution",icon:"🔴",desc:"Quiet selling into a tight range. Classic pattern for a position being unwound slowly.",color:"var(--red)"};
+  } else {
+    regime={name:"Transition",icon:"⚪",desc:"Regime is shifting — characteristics do not cleanly match trend, range, accumulation or distribution yet.",color:"var(--muted)"};
+  }
+
+  if(!S.regimeHistory.length||S.regimeHistory[0].name!==regime.name){
+    S.regimeHistory.unshift({name:regime.name,time:Date.now()});
+    if(S.regimeHistory.length>10)S.regimeHistory.pop();
+  }
+  return regime;
+}
+
 function compute(){
   var tot=S.buyVol+S.sellVol||1,bp=S.buyVol/tot;
 
@@ -575,6 +712,7 @@ function compute(){
   var bullTFs=tfVals.filter(function(v){return v>0.1;}).length;
   var bearTFs=tfVals.filter(function(v){return v<-0.1;}).length;
   var alignmentScore=Math.round(Math.abs(avgTF)*100);
+  var regime=detectRegime(volatility,avgTF,bp,recentTrades);
 
   /* ---- Exchange agreement ---- */
   var exDirs=[];
@@ -734,7 +872,8 @@ function compute(){
     alignmentScore:alignmentScore,agreementPct:agreementPct,exDirs:exDirs,bullEx:bullEx,bearEx:bearEx,
     smp:smp,smpLabel:smpLabel,priceConfirmation:priceConfirmation,
     absBuyPct:buyAbsPct,absSellPct:sellAbsPct,absNetDelta:absNetDelta,priceReactionScore:priceReactionScore,
-    absorptionScore:absorptionScore,trapProbability:trapProbability,absorptionType:absorptionType,isFlat:isFlat};
+    absorptionScore:absorptionScore,trapProbability:trapProbability,absorptionType:absorptionType,isFlat:isFlat,
+    regime:regime};
 }
 
 function renderDOM(){
@@ -835,6 +974,8 @@ function renderDOM(){
   document.getElementById("exagree-a").textContent=C.agreementPct>=70?"High agreement — exchanges are telling the same story.":C.agreementPct>=50?"Moderate agreement — some divergence between exchanges.":"Low agreement — exchanges disagree, treat signal cautiously.";
 
   computeAbsorption(C);
+  renderRegime(C);
+  renderWhaleSuccessDB();
 
   if(S.tradeCount>0){
     document.getElementById("bl-avg").textContent=fmtX(S.avgSize)+" XRP";
@@ -872,6 +1013,36 @@ function drawSMPRing(canvas,val){
   var pct=val/100,end=-Math.PI/2+pct*Math.PI*2;
   var col=val>=80?"#ec4899":val>=60?"#a855f7":val>=40?"#ffc940":"#475569";
   ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,end,false);ctx.strokeStyle=col;ctx.lineWidth=6;ctx.lineCap="round";ctx.stroke();
+}
+
+function renderRegime(C){
+  var r=C.regime;
+  document.getElementById("regime-tag").textContent=r.name.toUpperCase();
+  var rn=document.getElementById("regime-name");rn.textContent=r.icon+" "+r.name.toUpperCase();rn.style.color=r.color;
+  document.getElementById("regime-desc").textContent=r.desc;
+}
+
+function renderWhaleSuccessDB(){
+  updateSignalOutcomes();
+  var types=[
+    {key:"burst_buy",label:"🔥 Velocity Burst (Buy)"},
+    {key:"burst_sell",label:"🔥 Velocity Burst (Sell)"},
+    {key:"anomaly_buy",label:"⚡ Anomaly (Buy)"},
+    {key:"anomaly_sell",label:"⚡ Anomaly (Sell)"}
+  ];
+  var rows="";
+  var loggedTotal=S.trackedSignals.length;
+  types.forEach(function(t){
+    var stats=getSignalStats(t.key);
+    if(!stats)return;
+    var col=stats.winRate>=60?"var(--green)":stats.winRate>=45?"var(--yellow)":"var(--red)";
+    rows+="<div style=\"padding:6px 8px;border-radius:3px;background:rgba(255,255,255,.02);margin-bottom:4px;border-left:3px solid "+col+";\">"+
+      "<div style=\"display:flex;justify-content:space-between;font-size:10px;font-weight:600;margin-bottom:2px;\"><span>"+t.label+"</span><span style=\"color:"+col+";\">"+stats.winRate+"% win</span></div>"+
+      "<div style=\"font-size:9px;color:var(--muted);\">Avg move: "+(stats.avgMove>=0?"+":"")+stats.avgMove.toFixed(2)+"% · Sample: "+stats.total+"</div>"+
+      "</div>";
+  });
+  document.getElementById("wsd-badge").textContent=loggedTotal+" LOGGED";
+  document.getElementById("wsd-rows").innerHTML=rows||"<div style=\"color:var(--muted);font-size:9px;padding:4px;\">No signals tracked yet this session. Outcomes are checked 5/15/30 minutes after each signal fires.</div>";
 }
 
 function renderWhaleList(){
@@ -981,6 +1152,7 @@ async function init(){
   setTimeout(connectBitstamp,1500);
   setTimeout(connectOKX,2000);
   setInterval(function(){if(lastC){renderDOM();renderCanvas();}},6000);
+  setInterval(function(){updateSignalOutcomes();},20000);
 }
 init();
 </script>
